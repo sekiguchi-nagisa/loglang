@@ -1,2 +1,81 @@
-## syntax definition of Loglang
-## written by Nez
+// syntax definition of Loglang
+// written by Nez
+
+// lexical rule
+EOF = !.
+
+W = [0-9a-zA-Z_]+
+
+IDENTIFIER = [a-zA-Z_][0-9a-zA-Z_]*
+
+PATTERN = 'pattern' !W
+STATE   = 'state'   !W
+VAR     = 'var'     !W
+CASE    = 'case'    !W
+TRUE    = 'true'    !W
+FALSE   = 'false'   !W
+
+
+KEYWORD = PATTERN
+        / STATE
+        / VAR
+        / CASE
+        / TRUE
+        / FALSE
+
+_ = [ \t\n\r]*
+
+__ = [ \t]*
+
+LINE_END
+    = __ (EOF / [\r\n] / ';')
+
+File
+    = { _ @PatternDefinition _ @MatchStatement _ #Root }
+
+PATTERN_BEGIN
+    = '[[' __ '\n'
+
+PATTERN_END
+    = '\n]]' __ '\n'
+
+PatternDefinition
+    = PATTERN_BEGIN (!'\n]]' . )+ PATTERN_END
+
+MatchStatement
+    = { (_ @CaseStatement)+ #Match }
+
+CaseStatement
+    = { CASE _ @{ IDENTIFIER #CasePattern } @CaseBlock }
+
+CaseBlock
+    = _ { '{' _  (@StateDefinitions)? _ (@Statements)? _ '}' #CaseBlock } _
+
+StateDefinitions
+    = { _ @StateDefinition #States }+
+
+StateDefinition
+    = { STATE _ @{ IDENTIFIER #Name} _ '=' _ @Expression LINE_END  #State }
+
+Statements
+    = { _ @Statement #Statements }+
+
+Statement
+    = Expression
+
+Expression
+    = Integer / Float / Bool
+
+NUM = '0' / [1-9][0-9]*
+
+Integer
+    = { NUM #Integer }
+
+FLOAT_SIFFIX
+    = [eE] [+-]? NUM
+
+Float
+    = { NUM '.' [0-9]+ FLOAT_SIFFIX? #Float }
+
+Bool
+    = {TRUE #True / FALSE #False }
