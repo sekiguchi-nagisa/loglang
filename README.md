@@ -3,9 +3,10 @@ generalized log processor
 
 ## build requirement
 *  maven
-*  JDK1.7
+*  JDK1.8
 *  git
 *  bash
+*  ant
 
 ## how to build
 ```
