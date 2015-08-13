@@ -79,7 +79,7 @@ public class LoglangFactory {
                     if(i > 0) {
                         bw.write(" / ");
                     }
-                    bw.write("@{ ");
+                    bw.write("@{ @");
                     bw.write(casePatterns.get(i));
                     bw.write(" #");
                     bw.write(Integer.toString(i));

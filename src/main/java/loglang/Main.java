@@ -32,5 +32,6 @@ public class Main {
         }
 
         Loglang ll = new LoglangFactory().newLoglang(scriptFileName);
+        ll.invoke(inputFileName);
     }
 }
