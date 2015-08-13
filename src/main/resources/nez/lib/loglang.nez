@@ -23,48 +23,50 @@ KEYWORD = PATTERN
         / TRUE
         / FALSE
 
-_ = [ \t\n\r]*
+_ = ([ \t\r\n] / COMMENT)*
 
-__ = [ \t]*
+WS = ([ \t] / COMMENT)*
+
+COMMENT = '//' (![\r\n] .)*
 
 LINE_END
-    = __ (EOF / [\r\n] / ';')
+    = WS (EOF / [\r\n] / ';')
 
 File
     = { _ @PatternDefinition _ @MatchStatement _ #Root }
 
 PATTERN_BEGIN
-    = '[[' __ '\n'
+    = '[[' WS '\n'
 
 PATTERN_END
-    = '\n]]' __ '\n'
+    = '\n]]' WS '\n'
 
 PatternDefinition
-    = PATTERN_BEGIN (!'\n]]' . )+ PATTERN_END
+    = PATTERN_BEGIN { (!'\n]]' . )+ #PatternDefinition } PATTERN_END
 
 MatchStatement
     = { (_ @CaseStatement)+ #Match }
 
 CaseStatement
-    = { CASE _ @{ IDENTIFIER #CasePattern } @CaseBlock }
+    = { CASE _ @{ IDENTIFIER #CasePattern } @CaseBlock #CaseStatement }
 
 CaseBlock
-    = _ { '{' _  (@StateDefinitions)? _ (@Statements)? _ '}' #CaseBlock } _
+    = _ { '{' _ @StateDefinitions _ @Statements _ '}' #CaseBlock } _
 
 StateDefinitions
-    = { _ @StateDefinition #States }+
+    = { _ (@StateDefinition)* #States }
 
 StateDefinition
     = { STATE _ @{ IDENTIFIER #Name} _ '=' _ @Expression LINE_END  #State }
 
 Statements
-    = { _ @Statement #Statements }+
+    = { (_ @Statement LINE_END)* #Statements }
 
 Statement
     = Expression
 
 Expression
-    = Integer / Float / Bool
+    = Float / Integer / Bool
 
 NUM = '0' / [1-9][0-9]*
 

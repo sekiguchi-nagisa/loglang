@@ -15,5 +15,6 @@
     <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-all:5.0.4" level="project" />
     <orderEntry type="library" name="Maven: nez-core:nez-core:0.1" level="project" />
+    <orderEntry type="library" name="Maven: jline:jline:1.0" level="project" />
   </component>
 </module>
