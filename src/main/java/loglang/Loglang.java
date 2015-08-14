@@ -15,9 +15,18 @@ public class Loglang {
     private final String scriptName;
     private final Grammar patternGrammar;
 
-    public Loglang(String scriptName, Grammar patternGrammar) {
+    private CaseContext[] cases = null;
+
+    public Loglang(String scriptName, Grammar patternGrammar, int caseNum) {
         this.scriptName = scriptName;
         this.patternGrammar = patternGrammar;
+
+        this.cases = new CaseContext[caseNum];
+
+        // dummy: FIXME
+        for(int i = 0; i < caseNum; i++) {
+            this.cases[i] = (a) -> System.out.println(a.getText());
+        }
     }
 
     public void invoke(String sourceName, String line) {
@@ -39,9 +48,13 @@ public class Loglang {
                 System.err.println("not match");
                 System.exit(1);
             }
-            String tagName = result.get(0).getTag().getName();
+
+            CommonTree tree = result.get(0);
+            String tagName = tree.getTag().getName();
+            int id = Integer.parseInt(tagName);
+
             System.out.println("matched: " + tagName);
-            System.out.println(result.get(0).getText());
+            this.cases[id].invoke(tree.get(0));
             System.out.println();
         }
     }

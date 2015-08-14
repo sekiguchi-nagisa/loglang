@@ -28,10 +28,11 @@ public class LoglangFactory {
         CommonTree patternTree = getAndCheckTag(scriptTree, 0, "PatternDefinition");
         CommonTree matcherTree = getAndCheckTag(scriptTree, 1, "Match");
 
-        Grammar patternGrammar = this.newPatternGrammar(patternTree, this.getCasePatterns(matcherTree));
+        List<String> casePatterns = this.getCasePatterns(matcherTree);
+        Grammar patternGrammar = this.newPatternGrammar(patternTree, casePatterns);
 
 
-        return new Loglang(scriptName, patternGrammar);
+        return new Loglang(scriptName, patternGrammar, casePatterns.size());
     }
 
     private CommonTree newScriptTree(String scriptName) {
