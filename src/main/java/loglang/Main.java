@@ -21,7 +21,7 @@ public class Main {
                 (a) -> inputFileName = a.get());
         parser.addOption("h", "help", IGNORE_REST,
                 "show this help message",
-                (a) -> {parser.printHelp(System.out); System.exit(0); });
+                (a) -> { parser.printHelp(System.out); System.exit(0); });
 
         try {
             parser.parse(args);

@@ -95,9 +95,9 @@ public class LoglangFactory {
             String pathName = path.toString();
 
             // delete pattern file before shutdown
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                new File(pathName).delete();
-            }));
+            Runtime.getRuntime().addShutdownHook(
+                    new Thread(() -> new File(pathName).delete())
+            );
 
             return GrammarFile.loadGrammarFile(pathName, NezOption.newDefaultOption()).newGrammar("File");
         } catch(IOException e) {

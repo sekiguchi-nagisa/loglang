@@ -45,7 +45,7 @@ PatternDefinition
     = PATTERN_BEGIN { (!'\n]]' . )+ #PatternDefinition } PATTERN_END
 
 MatchStatement
-    = { (_ @CaseStatement)+ #Match }
+    = { ( _ @CaseStatement)+ #Match }
 
 CaseStatement
     = { CASE _ @{ IDENTIFIER #CasePattern } @CaseBlock #CaseStatement }
@@ -54,13 +54,13 @@ CaseBlock
     = _ { '{' _ @StateDefinitions _ @Statements _ '}' #CaseBlock } _
 
 StateDefinitions
-    = { _ (@StateDefinition)* #States }
+    = { ( _ @StateDefinition)* #States }
 
 StateDefinition
     = { STATE _ @{ IDENTIFIER #Name} _ '=' _ @Expression LINE_END  #State }
 
 Statements
-    = { (_ @Statement LINE_END)* #Statements }
+    = { ( _ @Statement LINE_END)* #Statements }
 
 Statement
     = Expression
@@ -80,4 +80,4 @@ Float
     = { NUM '.' [0-9]+ FLOAT_SIFFIX? #Float }
 
 Bool
-    = {TRUE #True / FALSE #False }
+    = { TRUE #True / FALSE #False }
