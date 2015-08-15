@@ -4,6 +4,7 @@ jdk:
   - oraclejdk8
 
 script:
+  - ./setup.sh
   - mvn package
 
 notifications:
