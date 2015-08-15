@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sekiguchi-nagisa/loglang.svg)](https://travis-ci.org/sekiguchi-nagisa/loglang)
+
 # Loglang
 generalized log processor
 
