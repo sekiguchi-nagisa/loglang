@@ -12,4 +12,29 @@ public class Utils {
         }
         throw new RuntimeException(t);
     }
+
+    private static String[] enableKeywords = {
+            "on", "true", "enable",
+    };
+
+    private static String[] disableKeywords = {
+            "off", "false", "disable",
+    };
+
+    public static boolean checkProperty(final String propertyName, final boolean defaultValue) {
+        String property = System.getProperty(propertyName);
+
+        for(String keyword : enableKeywords) {
+            if(keyword.equalsIgnoreCase(property)) {
+                return true;
+            }
+        }
+
+        for(String keyword : disableKeywords) {
+            if(keyword.equalsIgnoreCase(property)) {
+                return false;
+            }
+        }
+        return defaultValue;
+    }
 }

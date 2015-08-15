@@ -4,12 +4,12 @@ import java.io.PrintStream;
 import java.util.*;
 
 public class ArgsParser {
-    public final static int HAS_ARG     = 1 << 0;
+    public final static int HAS_ARG     = 1;
     public final static int REQUIRE     = 1 << 1;
     public final static int IGNORE_REST = 1 << 2;
 
     @FunctionalInterface
-    public static interface OptionListener {
+    public interface OptionListener {
         void invoke(Optional<String> arg);
     }
     private static OptionListener nullListener = (arg)-> { };
