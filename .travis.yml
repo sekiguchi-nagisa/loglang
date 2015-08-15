@@ -3,8 +3,10 @@ language: java
 jdk:
   - oraclejdk8
 
-script:
+before_script:
   - ./setup.sh
+
+script:
   - mvn package
 
 notifications:
