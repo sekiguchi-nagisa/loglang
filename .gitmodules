@@ -1,5 +1,5 @@
 [submodule "external/nez"]
     path = external/nez
-    url = git@github.com:sekiguchi-nagisa/nez-1.git
+    url = https://github.com/sekiguchi-nagisa/nez-1.git
     branch = module
     ignore = dirty
