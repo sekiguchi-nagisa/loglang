@@ -15,7 +15,7 @@ public class Loglang {
     private final String scriptName;
     private final Grammar patternGrammar;
 
-    private CaseContext[] cases = null;
+    private CaseContext[] cases;
 
     public Loglang(String scriptName, Grammar patternGrammar, int caseNum) {
         this.scriptName = scriptName;
@@ -30,7 +30,7 @@ public class Loglang {
     }
 
     public void invoke(String sourceName, String line) {
-        this.invoke(SourceContext.newStringContext(line));
+        this.invoke(SourceContext.newStringContext(Objects.requireNonNull(line)));
     }
 
     public void invoke(String inputName) {
@@ -42,6 +42,7 @@ public class Loglang {
     }
 
     public void invoke(SourceContext inputSource) {
+        Objects.requireNonNull(inputSource);
         while(inputSource.hasUnconsumed()) {
             CommonTree result = this.patternGrammar.parseCommonTree(inputSource);
             if(result == null) {
