@@ -54,7 +54,16 @@ public class LoglangFactory {
             System.exit(1);
         }
 
-        return g.parseCommonTree(src);
+        CommonTree tree = g.parseCommonTree(src);
+        if(tree == null) {
+            System.err.println(src.getSyntaxErrorMessage());
+            System.exit(1);
+        }
+        if(src.hasUnconsumed()) {
+            System.err.println(src.getUnconsumedMessage());
+            System.exit(1);
+        }
+        return tree;
     }
 
     private List<String> getCasePatterns(CommonTree matcherTree) {
