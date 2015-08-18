@@ -94,7 +94,16 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     }
 
     @Override
-    public Node visitPopNode(PopNode node, Void paramNode) {
+    public Node visitPopNode(PopNode node, Void param) {
         throw new UnsupportedOperationException();    // not call it.
+    }
+
+    @Override
+    public Node visitRootNode(RootNode node, Void param) {
+        for(CaseNode caseNode : node.getCaseNodes()) {
+            this.checkTypeAsStatement(caseNode);
+        }
+        node.setType(void.class);
+        return node;
     }
 }

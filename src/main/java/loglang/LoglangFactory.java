@@ -31,8 +31,7 @@ public class LoglangFactory {
         List<String> casePatterns = this.getCasePatterns(matcherTree);
         Grammar patternGrammar = this.newPatternGrammar(patternTree, casePatterns);
 
-        List<Node.CaseNode> caseNodes = TreeTranslator.create().translate(matcherTree);
-
+        Node.RootNode rootNode = (Node.RootNode) TreeTranslator.create().translate(matcherTree);
 
         return new Loglang(scriptName, patternGrammar, casePatterns.size());
     }
@@ -106,7 +105,7 @@ public class LoglangFactory {
             String pathName = path.toString();
 
             // delete pattern file before shutdown
-            if(Utils.checkProperty("deletePattern", true)) {
+            if(Config.deletePattern) {
                 Runtime.getRuntime().addShutdownHook(
                         new Thread(() -> new File(pathName).delete())
                 );

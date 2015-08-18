@@ -200,4 +200,22 @@ public abstract class Node {
             return exprNode;
         }
     }
+
+    public static class RootNode extends Node {
+        private final List<CaseNode> caseNodes = new ArrayList<>();
+
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitRootNode(this, param);
+        }
+
+        public List<CaseNode> getCaseNodes() {
+            return caseNodes;
+        }
+
+        public void addCaseNode(CaseNode node) {
+            this.caseNodes.add(node);
+        }
+    }
 }

@@ -25,7 +25,7 @@ public abstract class TreeTranslator {
         }
     }
 
-    protected Node dispatch(CommonTree tree) {
+    public Node translate(CommonTree tree) {
         String key = tree.getTag().getName();
         TagHandler handler = this.handlerMap.get(key);
         if(Objects.isNull(handler)) {
@@ -39,21 +39,22 @@ public abstract class TreeTranslator {
         return null;
     }
 
-    public List<CaseNode> translate(CommonTree tree) {
-        List<CaseNode> cases = new ArrayList<>();
-        for(CommonTree child : tree) {
-            cases.add((CaseNode) this.dispatch(child));
-        }
-        return cases;
-    }
-
     public static TreeTranslator create() {
         return new TreeTranslatorImpl();
     }
 }
 
 class TreeTranslatorImpl extends TreeTranslator {{
-    this.add("CaseStatement", (t) -> this.dispatch(t.get(1)));
+    this.add("Match", (t) -> {  // entry point
+        RootNode node = new RootNode();
+        for(CommonTree child : t) {
+            node.addCaseNode((CaseNode) this.translate(child));
+        }
+        return node;
+    });
+
+
+    this.add("CaseStatement", (t) -> this.translate(t.get(1)));
 
     this.add("CaseBlock", (t) -> {
         assert t.size() == 2;
@@ -61,12 +62,12 @@ class TreeTranslatorImpl extends TreeTranslator {{
         CaseNode caseNode = new CaseNode();
         // state decl
         for(CommonTree child : t.get(0)) {
-            caseNode.addStateDeclNode((StateDeclNode) this.dispatch(child));
+            caseNode.addStateDeclNode((StateDeclNode) this.translate(child));
         }
 
         // block
         for(CommonTree child : t.get(1)) {
-            caseNode.addStmtNode(this.dispatch(child));
+            caseNode.addStmtNode(this.translate(child));
         }
 
         return caseNode;
@@ -137,7 +138,7 @@ class TreeTranslatorImpl extends TreeTranslator {{
     this.add("State", (t) -> {
         assert t.size() == 2;
         String name = t.get(0).getText();
-        Node initValueNode = this.dispatch(t.get(1));
+        Node initValueNode = this.translate(t.get(1));
         return new StateDeclNode(name, initValueNode);
     });
 }}

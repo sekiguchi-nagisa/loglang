@@ -1,5 +1,7 @@
 package loglang.misc;
 
+import java.util.Random;
+
 /**
  * Created by skgchxngsxyz-osx on 15/08/13.
  */
@@ -13,11 +15,11 @@ public class Utils {
         throw new RuntimeException(e);
     }
 
-    private static String[] enableKeywords = {
+    private final static String[] enableKeywords = {
             "on", "true", "enable",
     };
 
-    private static String[] disableKeywords = {
+    private final static String[] disableKeywords = {
             "off", "false", "disable",
     };
 
@@ -46,5 +48,11 @@ public class Utils {
             System.err.println("\tat " + element);
         }
         System.exit(1);
+    }
+
+    private final static Random rnd = new Random(System.currentTimeMillis());
+
+    public static int getRandomNum() {
+        return rnd.nextInt();
     }
 }
