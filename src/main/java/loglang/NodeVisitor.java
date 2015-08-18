@@ -18,4 +18,8 @@ public interface NodeVisitor<T, P> {
     T visitFloatLiteralNode(FloatLiteralNode node, P param);
     T visitBoolLiteralNode(BoolLiteralNode node, P param);
     T visitStringLiteralNode(StringLiteralNode node, P param);
+    T visitCaseNode(CaseNode node, P param);
+    T visitBlockNode(BlockNode node, P param);
+    T visitStateDeclNode(StateDeclNode node, P param);
+    T visitPopNode(PopNode node, P paramNode);
 }

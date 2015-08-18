@@ -12,4 +12,4 @@ else
     exit 1
 fi
 
-java -jar ./external/nez/nez.jar ast -p ./src/main/resources/loglang.nez  -i $1
+java -jar ./external/nez/nez.jar ast -p ./src/main/resources/nez/lib/loglang.nez  -i $1
