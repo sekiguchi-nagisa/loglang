@@ -104,11 +104,8 @@ public abstract class Node {
     }
 
     public static class CaseNode extends Node {
-        private final BlockNode blockNode;
-
-        public CaseNode(BlockNode blockNode) {
-            this.blockNode = Objects.requireNonNull(blockNode);
-        }
+        private final List<StateDeclNode> stateDeclNodes = new ArrayList<>();
+        private final BlockNode blockNode = new BlockNode();
 
         @Override
         public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
@@ -117,6 +114,18 @@ public abstract class Node {
 
         public BlockNode getBlockNode() {
             return this.blockNode;
+        }
+
+        public List<StateDeclNode> getStateDeclNodes() {
+            return stateDeclNodes;
+        }
+
+        public void addStmtNode(Node node) {
+            this.blockNode.addNode(node);
+        }
+
+        public void addStateDeclNode(StateDeclNode node) {
+            this.stateDeclNodes.add(node);
         }
     }
 

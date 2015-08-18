@@ -31,6 +31,8 @@ public class LoglangFactory {
         List<String> casePatterns = this.getCasePatterns(matcherTree);
         Grammar patternGrammar = this.newPatternGrammar(patternTree, casePatterns);
 
+        List<Node.CaseNode> caseNodes = TreeTranslator.create().translate(matcherTree);
+
 
         return new Loglang(scriptName, patternGrammar, casePatterns.size());
     }
