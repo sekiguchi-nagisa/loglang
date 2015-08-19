@@ -24,11 +24,6 @@ public class ByteCodeLoader extends ClassLoader {
      */
     private final Map<String, byte[]> byteCodeMap;
 
-    /**
-     *
-     * @param packageName
-     * must be equivalent to TypePool#generatedPackage
-     */
     public ByteCodeLoader(String packageName) {
         super();
         this.allowedPackageName = toBinaryName(packageName);

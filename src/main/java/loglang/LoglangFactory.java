@@ -1,5 +1,8 @@
 package loglang;
 
+import loglang.jvm.ByteCodeGenerator;
+import loglang.jvm.ByteCodeLoader;
+import loglang.misc.Pair;
 import loglang.misc.Utils;
 import nez.NezOption;
 import nez.SourceContext;
@@ -32,6 +35,13 @@ public class LoglangFactory {
         Grammar patternGrammar = this.newPatternGrammar(patternTree, casePatterns);
 
         Node.RootNode rootNode = (Node.RootNode) TreeTranslator.create().translate(matcherTree);
+        new TypeChecker().visit(rootNode);
+        ByteCodeGenerator gen = new ByteCodeGenerator();
+        ByteCodeLoader loader = new ByteCodeLoader(gen.getPackageName());
+        for(Node.CaseNode caseNode : rootNode.getCaseNodes()) {
+            Pair<String, byte[]> pair = gen.generateCode(caseNode);
+            loader.definedAndLoadClass(pair.getLeft(), pair.getRight());
+        }
 
         return new Loglang(scriptName, patternGrammar, casePatterns.size());
     }

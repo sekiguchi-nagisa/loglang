@@ -5,8 +5,10 @@ import static loglang.Node.*;
 import loglang.CaseContext;
 import loglang.Node;
 import loglang.NodeVisitor;
+import loglang.Types;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
+import nez.ast.CommonTree;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -21,7 +23,7 @@ import java.util.Deque;
  * Created by skgchxngsxyz-opensuse on 15/08/19.
  */
 public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, Opcodes {
-    private final String packageName = "loglang.generated" + Utils.getRandomNum();
+    private final String packageName;
 
     private int classNameSuffixCount = -1;
 
@@ -31,6 +33,19 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
      */
     private final Deque<Pair<Label, Label>> loopLabels = new ArrayDeque<>();
 
+    public ByteCodeGenerator() {
+        int num = Utils.getRandomNum();
+        if(num < 0) {
+            num = -num;
+        }
+        this.packageName = "loglang/generated" + num;
+    }
+
+
+    public String getPackageName() {
+        return this.packageName;
+    }
+
     /**
      * code generation entry point
      * @param caseNode
@@ -38,57 +53,106 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
      * pair of generated class name (fully qualified name) and byte code.
      */
     public Pair<String, byte[]> generateCode(CaseNode caseNode) {
-        String className = packageName + "Case" + ++this.classNameSuffixCount;
+        String className = packageName + "/Case" + ++this.classNameSuffixCount;
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         cw.visit(V1_8, ACC_PUBLIC, className, null,
                 Type.getInternalName(Object.class), new String[]{Type.getInternalName(CaseContext.class)});
         cw.visitSource(null, null);
 
-        return Pair.of(className, null);
+        // generate state (field)
+        for(StateDeclNode child : caseNode.getStateDeclNodes()) {
+            cw.visitField(ACC_PUBLIC, child.getName(),
+                    Type.getType(Types.actualClass(child.getInitValueNode().getType())).getDescriptor(),
+                    null, null);
+        }
+
+        // generate constructor
+        Method methodDesc = new Method("<init>", Type.VOID_TYPE, new Type[0]);
+        GeneratorAdapter adapter = new GeneratorAdapter(ACC_PUBLIC, methodDesc, null, null, cw);
+        adapter.loadThis();
+        adapter.invokeConstructor(Type.getType(Object.class), methodDesc);
+        // field initialization
+        for(StateDeclNode child : caseNode.getStateDeclNodes()) {
+            this.visit(child.getInitValueNode(), adapter);
+            adapter.putField(Type.getType("L" + className + ";"), child.getName(),
+                    Type.getType(Types.actualClass(child.getInitValueNode().getType())));
+        }
+        adapter.returnValue();
+        adapter.endMethod();
+
+        // generate method
+        methodDesc = new Method("invoke", Type.VOID_TYPE, new Type[] {Type.getType(CommonTree.class)});
+        adapter = new GeneratorAdapter(ACC_PUBLIC, methodDesc, null, null, cw);
+
+        this.visit(caseNode.getBlockNode(), adapter);
+
+        adapter.returnValue();
+        adapter.endMethod();
+
+
+        // finalize
+        cw.visitEnd();
+        return Pair.of(className, cw.toByteArray());
     }
 
     @Override
     public Void visitIntLiteralNode(IntLiteralNode node, GeneratorAdapter param) {
+        param.push(node.getValue());
         return null;
     }
 
     @Override
     public Void visitFloatLiteralNode(FloatLiteralNode node, GeneratorAdapter param) {
+        param.push(node.getValue());
         return null;
     }
 
     @Override
     public Void visitBoolLiteralNode(BoolLiteralNode node, GeneratorAdapter param) {
+        param.push(node.getValue());
         return null;
     }
 
     @Override
     public Void visitStringLiteralNode(StringLiteralNode node, GeneratorAdapter param) {
+        param.push(node.getValue());
         return null;
     }
 
     @Override
     public Void visitCaseNode(CaseNode node, GeneratorAdapter param) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Void visitBlockNode(BlockNode node, GeneratorAdapter param) {
+        for(Node child : node.getNodes()) {
+            this.visit(child, param);
+        }
         return null;
     }
 
     @Override
     public Void visitStateDeclNode(StateDeclNode node, GeneratorAdapter param) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Void visitPopNode(PopNode node, GeneratorAdapter param) {
+        this.visit(node.getExprNode(), param);
+
+        // pop stack top
+        java.lang.reflect.Type exprType = node.getExprNode().getType();
+        if(exprType.equals(long.class) || exprType.equals(double.class)) {
+            param.pop2();
+        } else {
+            param.pop();
+        }
         return null;
     }
 
     @Override
     public Void visitRootNode(RootNode node, GeneratorAdapter param) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

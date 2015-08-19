@@ -75,13 +75,17 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     @Override
     public Node visitCaseNode(CaseNode node, Void param) {  //FIXME:
+        for(StateDeclNode child : node.getStateDeclNodes()) {
+            this.checkTypeAsStatement(child);
+        }
         this.checkTypeAsStatement(node.getBlockNode());
         node.setType(void.class);
         return node;
     }
 
     @Override
-    public Node visitBlockNode(BlockNode node, Void param) {    //FIXME:
+    public Node visitBlockNode(BlockNode node, Void param) {
+        node.getNodes().replaceAll(this::checkTypeAsStatement);
         node.setType(void.class);
         return node;
     }
