@@ -1,5 +1,8 @@
 package loglang.misc;
 
+import java.util.ArrayList;
+import java.util.EmptyStackException;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -54,5 +57,37 @@ public class Utils {
 
     public static int getRandomNum() {
         return rnd.nextInt();
+    }
+
+    public static int setFlag(int bitset, int flag) {
+        return bitset | flag;
+    }
+
+    public static int unsetFlag(int bitset, int flag) {
+        return bitset & (~flag);
+    }
+
+    public static boolean hasFlag(int bitset, int flag) {
+        return (bitset & flag) == flag;
+    }
+
+    public static <T> void push(ArrayList<T> array, T value) {
+        array.add(value);
+    }
+
+    public static <T> T pop(ArrayList<T> array) {
+        int lastIndex = array.size() - 1;
+        if(lastIndex < 0) {
+            throw new EmptyStackException();
+        }
+        return array.remove(lastIndex);
+    }
+
+    public static <T> T peek(ArrayList<T> array) {
+        int lastIndex = array.size() - 1;
+        if(lastIndex < 0) {
+            throw new EmptyStackException();
+        }
+        return array.get(lastIndex);
     }
 }

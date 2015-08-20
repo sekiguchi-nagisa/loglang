@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [ -n ${LL_DUMP_BYTECODE} ]; then
+if [ "${LL_DUMP_BYTECODE}" != "" ]; then
     JVM_OPTION="${JVM_OPTION} -DdumpByteCode=on"
 fi
 
-if [ -n ${LL_DUMP_PATTERN} ]; then
-    JVM_OPTION="${JVM_OPTION} -DdeletePattern=off"
+if [ "${LL_DUMP_PATTERN}" != "" ]; then
+    JVM_OPTION="${JVM_OPTION} -DdumpPattern=on"
 fi
 
 java $JVM_OPTION -jar ./target/loglang-1.0-SNAPSHOT-jar-with-dependencies.jar $@

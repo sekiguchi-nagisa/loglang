@@ -115,7 +115,9 @@ public class LoglangFactory {
             String pathName = path.toString();
 
             // delete pattern file before shutdown
-            if(Config.deletePattern) {
+            if(Config.dumpPattern) {
+                System.err.println("@@@@ Dump Pattern File: " + pathName + " @@@@");
+            } else {
                 Runtime.getRuntime().addShutdownHook(
                         new Thread(() -> new File(pathName).delete())
                 );

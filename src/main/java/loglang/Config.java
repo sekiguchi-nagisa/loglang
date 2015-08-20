@@ -8,6 +8,6 @@ import loglang.misc.Utils;
 public final class Config {
     private Config() { }
 
-    public final static boolean deletePattern = Utils.checkProperty("deletePattern", true);
+    public final static boolean dumpPattern = Utils.checkProperty("dumpPattern", false);
     public final static boolean dumpByteCode = Utils.checkProperty("dumpByteCode", false);
 }
