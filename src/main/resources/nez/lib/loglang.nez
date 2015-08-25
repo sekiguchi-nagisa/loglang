@@ -57,27 +57,33 @@ StateDefinitions
     = { ( _ @StateDefinition)* #States }
 
 StateDefinition
-    = { STATE _ @{ IDENTIFIER #Name} _ '=' _ @Expression LINE_END  #State }
+    = { STATE _ @Variable _ '=' _ @Expression LINE_END  #State }
 
 Statements
     = { ( _ @Statement LINE_END)* #Statements }
 
 Statement
-    = Expression
+    = VarDecl / Expression
+
+VarDecl
+    = { VAR _ @Variable _ '=' _ @Expression #VarDecl }
 
 Expression
-    = Float / Integer / Bool
+    = Float / Integer / Bool / Variable
 
 NUM = '0' / [1-9][0-9]*
 
 Integer
     = { NUM #Integer }
 
-FLOAT_SIFFIX
+FLOAT_SUFFIX
     = [eE] [+-]? NUM
 
 Float
-    = { NUM '.' [0-9]+ FLOAT_SIFFIX? #Float }
+    = { NUM '.' [0-9]+ FLOAT_SUFFIX? #Float }
 
 Bool
     = { TRUE #True / FALSE #False }
+
+Variable
+    = { !KEYWORD IDENTIFIER #Variable }

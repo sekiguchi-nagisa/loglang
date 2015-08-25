@@ -11,12 +11,12 @@ import java.util.Objects;
 /**
  * Created by skgchxngsxyz-osx on 15/08/19.
  */
-public class CaseScope {
+public class ClassScope {
     private final Map<String, SymbolEntry> fieldMap = new HashMap<>();
     private final ArrayList<Scope> scopes = new ArrayList<>();
     private final ArrayList<Integer> indexCounters = new ArrayList<>();
 
-    CaseScope() { } // not allow direct construction
+    ClassScope() { } // not allow direct construction
 
     /**
      *
@@ -79,6 +79,11 @@ public class CaseScope {
      * if entry creation failed(found duplicated entry), return null.
      */
     public SymbolEntry newLocalEntry(String symbolName, Type type, boolean readOnly) {
+        // check state variable
+        if(this.fieldMap.containsKey(Objects.requireNonNull(symbolName))) {
+            return null;
+        }
+
         int attribute = LOCAL_VAR;
         if(readOnly) {
             attribute = Utils.setFlag(attribute, READ_ONLY);

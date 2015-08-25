@@ -21,6 +21,8 @@ public interface NodeVisitor<T, P> {
     T visitCaseNode(CaseNode node, P param);
     T visitBlockNode(BlockNode node, P param);
     T visitStateDeclNode(StateDeclNode node, P param);
+    T visitVarDeclNode(VarDeclNode node, P param);
+    T visitVarNode(VarNode node, P param);
     T visitPopNode(PopNode node, P param);
     T visitRootNode(RootNode node, P param);
 }

@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by skgchxngsxyz-osx on 15/08/25.
  */
 public class SymbolTable {
-    private final ArrayList<CaseScope> cases = new ArrayList<>();
+    private final ArrayList<ClassScope> cases = new ArrayList<>();
     private final Map<String, Integer> labelMap = new HashMap<>();
 
     /**
@@ -18,8 +18,8 @@ public class SymbolTable {
      * @return
      * created case scope
      */
-    public CaseScope newCaseScope(String labelName) {
-        CaseScope scope = new CaseScope();
+    public ClassScope newCaseScope(String labelName) {
+        ClassScope scope = new ClassScope();
         this.cases.add(scope);
         int index = this.cases.size() - 1;
         if(labelName != null) {
@@ -37,7 +37,7 @@ public class SymbolTable {
      * @throws IndexOutOfBoundsException
      * if not found
      */
-    public CaseScope findCaseScope(int index) throws IndexOutOfBoundsException {
+    public ClassScope findCaseScope(int index) throws IndexOutOfBoundsException {
         return this.cases.get(index);
     }
 
@@ -48,7 +48,7 @@ public class SymbolTable {
      * @return
      * if not found, return null
      */
-    public CaseScope findCaseScope(String labelName) {
+    public ClassScope findCaseScope(String labelName) {
         Integer boxed = this.labelMap.get(labelName);
         if(boxed != null) {
             return this.cases.get(boxed.intValue());

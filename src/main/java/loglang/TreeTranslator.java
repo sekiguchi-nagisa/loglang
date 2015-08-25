@@ -59,7 +59,7 @@ class TreeTranslatorImpl extends TreeTranslator {{
     this.add("CaseBlock", (t) -> {
         assert t.size() == 2;
 
-        CaseNode caseNode = new CaseNode();
+        CaseNode caseNode = new CaseNode(null); //FIXME: label
         // state decl
         for(CommonTree child : t.get(0)) {
             caseNode.addStateDeclNode((StateDeclNode) this.translate(child));
@@ -135,11 +135,20 @@ class TreeTranslatorImpl extends TreeTranslator {{
         return new StringLiteralNode(sb.toString());
     });
 
+    this.add("Variable", (t) -> new VarNode(t.getText()));
+
     this.add("State", (t) -> {
         assert t.size() == 2;
         String name = t.get(0).getText();
         Node initValueNode = this.translate(t.get(1));
         return new StateDeclNode(name, initValueNode);
+    });
+
+    this.add("VarDecl", (t) -> {
+        assert t.size() == 2;
+        String name = t.get(0).getText();
+        Node initValueNode = this.translate(t.get(1));
+        return new VarDeclNode(name, initValueNode);
     });
 }}
 

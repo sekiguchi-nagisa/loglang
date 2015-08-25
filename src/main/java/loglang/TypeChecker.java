@@ -10,6 +10,14 @@ import static loglang.Types.*;
  * Created by skgchxngsxyz-osx on 15/08/18.
  */
 public class TypeChecker implements NodeVisitor<Node, Void> {
+    private final SymbolTable symbolTable = new SymbolTable();
+
+    /**
+     * for currently processing class.
+     */
+    private ClassScope classScope = null;
+
+
     public Node checkType(Type requiredType, Node targetNode, Type unacceptableType) {  //FIXME: coercion
         if(targetNode.getType() == null) {
             this.visit(targetNode);
@@ -35,17 +43,44 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         return null;
     }
 
+    /**
+     * not allow void type
+     * @param targetNode
+     * @return
+     */
     public Node checkType(Node targetNode) {
         return this.checkType(null, targetNode, void.class);
     }
 
+    /**
+     * not allow void type
+     * @param requiredType
+     * @param targetNode
+     * @return
+     */
     public Node checkType(Type requiredType, Node targetNode) {
         return this.checkType(requiredType, targetNode, null);
     }
 
+    /**
+     * allow void type.
+     * if resoleved type is not void, wrap popNode
+     * @param targetNode
+     * @return
+     */
     public Node checkTypeAsStatement(Node targetNode) {
         Node node = this.checkType(null, targetNode, null);
         return node.hasReturnValue() ? new PopNode(node) : node;
+    }
+
+    public void checkTypeWithCurrentScope(BlockNode blockNode) {
+        this.checkTypeAsStatement(blockNode);
+    }
+
+    public void checkTypeWithNewScope(BlockNode blockNode) {
+        this.classScope.entryScope();
+        this.checkTypeWithCurrentScope(blockNode);
+        this.classScope.exitScope();
     }
 
 
@@ -74,11 +109,19 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     }
 
     @Override
-    public Node visitCaseNode(CaseNode node, Void param) {  //FIXME:
+    public Node visitCaseNode(CaseNode node, Void param) {  //FIXME: case parameter
+        // create new ClassScope
+        this.classScope = this.symbolTable.newCaseScope(node.getLabelName());
+        this.classScope.enterMethod();
+
         for(StateDeclNode child : node.getStateDeclNodes()) {
             this.checkTypeAsStatement(child);
         }
-        this.checkTypeAsStatement(node.getBlockNode());
+        this.checkTypeWithCurrentScope(node.getBlockNode());
+
+        node.setLocalSize(this.classScope.getMaximumLocalSize());
+        this.classScope.exitMethod();
+
         node.setType(void.class);
         return node;
     }
@@ -91,9 +134,43 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     }
 
     @Override
-    public Node visitStateDeclNode(StateDeclNode node, Void param) {    //FIXME: register state name to symbol table
+    public Node visitStateDeclNode(StateDeclNode node, Void param) {
         node.setInitValueNode(this.checkType(node.getInitValueNode()));
+
+        Type type = node.getInitValueNode().getType();
+        ClassScope.SymbolEntry entry = this.classScope.newStateEntry(node.getName(), type, false);
+        if(entry == null) {
+            semanticError("already defined state variable: " + node.getName());
+        }
+
         node.setType(void.class);
+        return node;
+    }
+
+    @Override
+    public Node visitVarDeclNode(VarDeclNode node, Void param) {
+        node.setInitValueNode(this.checkType(node.getInitValueNode()));
+
+        Type type = node.getInitValueNode().getType();
+        ClassScope.SymbolEntry entry = this.classScope.newLocalEntry(node.getName(), type, false);
+        if(entry == null) {
+            semanticError("already defined local variable: " + node.getName());
+        }
+
+        node.setEntry(entry);
+        node.setType(void.class);
+        return node;
+    }
+
+    @Override
+    public Node visitVarNode(VarNode node, Void param) {
+        ClassScope.SymbolEntry entry = this.classScope.findEntry(node.getVarName());
+        if(entry == null) {
+            semanticError("undefined variable: " + node.getVarName());
+        }
+
+        node.setEntry(entry);
+        node.setType(entry.type);
         return node;
     }
 

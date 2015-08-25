@@ -107,6 +107,20 @@ public abstract class Node {
         private final List<StateDeclNode> stateDeclNodes = new ArrayList<>();
         private final BlockNode blockNode = new BlockNode();
 
+        /**
+         * may be null if has no label
+         */
+        private final String labelName;
+
+        /**
+         * maximum number of local variable(for byte code generation)
+         */
+        private int localSize = 0;
+
+        public CaseNode(String labelName) {
+            this.labelName = labelName;
+        }
+
         @Override
         public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
             return visitor.visitCaseNode(this, param);
@@ -126,6 +140,23 @@ public abstract class Node {
 
         public void addStateDeclNode(StateDeclNode node) {
             this.stateDeclNodes.add(node);
+        }
+
+        /**
+         *
+         * @return
+         * may be null
+         */
+        public String getLabelName() {
+            return labelName;
+        }
+
+        public void setLocalSize(int size) {
+            this.localSize = size;
+        }
+
+        public int getLocalSize() {
+            return this.localSize;
         }
     }
 
@@ -170,6 +201,74 @@ public abstract class Node {
 
         public String getName() {
             return name;
+        }
+    }
+
+    public static class VarDeclNode extends Node {
+        private final String name;
+        private Node initValueNode;
+        private ClassScope.SymbolEntry entry;
+
+        public VarDeclNode(String name, Node initValueNode) {
+            this.name = name;
+            this.initValueNode = initValueNode;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setInitValueNode(Node initValueNode) {
+            this.initValueNode = initValueNode;
+        }
+
+        public Node getInitValueNode() {
+            return initValueNode;
+        }
+
+        public void setEntry(ClassScope.SymbolEntry entry) {
+            this.entry = entry;
+        }
+
+        public ClassScope.SymbolEntry getEntry() {
+            return entry;
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitVarDeclNode(this, param);
+        }
+    }
+
+    public static class VarNode extends Node {
+        private final String varName;
+        private ClassScope.SymbolEntry entry;
+
+        public VarNode(String varName) {
+            this.varName = varName;
+            this.entry = null;
+        }
+
+        public String getVarName() {
+            return this.varName;
+        }
+
+        public void setEntry(ClassScope.SymbolEntry entry) {
+            this.entry = Objects.requireNonNull(entry);
+        }
+
+        /**
+         *
+         * @return
+         * return null before call setEntry
+         */
+        public ClassScope.SymbolEntry getEntry() {
+            return this.entry;
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitVarNode(this, param);
         }
     }
 

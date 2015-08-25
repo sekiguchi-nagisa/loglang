@@ -2,10 +2,7 @@ package loglang.jvm;
 
 import static loglang.Node.*;
 
-import loglang.CaseContext;
-import loglang.Node;
-import loglang.NodeVisitor;
-import loglang.Types;
+import loglang.*;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
 import nez.ast.CommonTree;
@@ -135,6 +132,25 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
     @Override
     public Void visitStateDeclNode(StateDeclNode node, GeneratorAdapter param) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Void visitVarDeclNode(VarDeclNode node, GeneratorAdapter param) {
+        this.visit(node.getInitValueNode(), param);
+        Type desc = Type.getType(Types.actualClass(node.getEntry().type));
+        param.visitVarInsn(desc.getOpcode(ISTORE), node.getEntry().index);
+        return null;
+    }
+
+    @Override
+    public Void visitVarNode(VarNode node, GeneratorAdapter param) {
+        Type desc = Type.getType(Types.actualClass(node.getEntry().type));
+        if(Utils.hasFlag(node.getEntry().attribute, ClassScope.LOCAL_VAR)) {
+            param.visitVarInsn(desc.getOpcode(ILOAD), node.getEntry().index);
+        } else {
+//            param.get //FIXME:
+        }
+        return null;
     }
 
     @Override
