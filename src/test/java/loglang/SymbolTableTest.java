@@ -96,6 +96,26 @@ public class SymbolTableTest {
 
         assertEquals(3, scope.getMaximumLocalSize());
 
+        // long or double(consume 2 entry)
+        scope.entryScope();
+
+        e = scope.newLocalEntry("d", long.class, false);
+        assertEquals(1, e.index);
+        assertEquals(long.class, e.type);
+        assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
+        assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
+
+        e = scope.newLocalEntry("e", double.class, false);
+        assertEquals(3, e.index);
+        assertEquals(double.class, e.type);
+        assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
+        assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
+
+
+        scope.exitScope();
+
+        assertEquals(5, scope.getMaximumLocalSize());
+
 
         scope.exitMethod();
     }

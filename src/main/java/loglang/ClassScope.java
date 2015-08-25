@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Created by skgchxngsxyz-osx on 15/08/19.
+ * for local variable and instance field management
  */
 public class ClassScope {
     private final Map<String, SymbolEntry> fieldMap = new HashMap<>();
@@ -88,11 +88,7 @@ public class ClassScope {
         if(readOnly) {
             attribute = Utils.setFlag(attribute, READ_ONLY);
         }
-        SymbolEntry e = new SymbolEntry(Utils.peek(this.scopes).curIndex, type, attribute);
-        if(!Utils.peek(this.scopes).add(symbolName, e)) {
-            return null;
-        }
-        return e;
+        return Utils.peek(this.scopes).newEntry(symbolName, type, attribute);
     }
 
     /**
@@ -119,6 +115,9 @@ public class ClassScope {
     }
 
 
+    /**
+     * for local variable scope management
+     */
     private static class Scope {
         private int curIndex;
         private final Map<String, SymbolEntry> entryMap;
@@ -132,16 +131,24 @@ public class ClassScope {
             return this.entryMap.get(symbolName);
         }
 
-        private boolean add(String name, SymbolEntry entry) {
+        private SymbolEntry newEntry(String name, Type type, int attribute) {
             Objects.requireNonNull(name);
-            Objects.requireNonNull(entry);
+            Objects.requireNonNull(type);
 
             if(this.entryMap.containsKey(name)) {
-                return false;
+                return null;
             }
+
+            attribute = Utils.setFlag(attribute, LOCAL_VAR);
+
+            SymbolEntry entry = new SymbolEntry(this.curIndex, type, attribute);
             this.entryMap.put(name, entry);
             this.curIndex++;
-            return true;
+
+            if(type.equals(long.class) || type.equals(double.class)) {
+                this.curIndex++;
+            }
+            return entry;
         }
     }
 
