@@ -1,6 +1,7 @@
 package loglang;
 
 import loglang.misc.Utils;
+import loglang.type.LType;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -9,6 +10,11 @@ import static org.junit.Assert.*;
  * Created by skgchxngsxyz-osx on 15/08/25.
  */
 public class SymbolTableTest {
+    public static LType of(Class<?> clazz) {
+        return new LType(clazz, null);
+    }
+
+
     @Test
     public void test() {
         SymbolTable symbolTable = new SymbolTable();
@@ -20,37 +26,37 @@ public class SymbolTableTest {
         scope.enterMethod();
 
         // state entry
-        ClassScope.SymbolEntry e = scope.newStateEntry("a", int.class, false);
+        ClassScope.SymbolEntry e = scope.newStateEntry("a", of(int.class), false);
         assertEquals(-1, e.index);
-        assertEquals(int.class, e.type);
+        assertEquals(of(int.class), e.type);
         assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.INSTANCE_FIELD));
 
-        assertEquals(null, scope.newStateEntry("a", String.class, true));   // duplicated
-        assertEquals(null, scope.newLocalEntry("a", String.class, true));   // duplicated
+        assertEquals(null, scope.newStateEntry("a", of(String.class), true));   // duplicated
+        assertEquals(null, scope.newLocalEntry("a", of(String.class), true));   // duplicated
 
         // local entry
-        e = scope.newLocalEntry("b", float.class, true);
+        e = scope.newLocalEntry("b", of(float.class), true);
         assertEquals(0, e.index);
-        assertEquals(float.class, e.type);
+        assertEquals(of(float.class), e.type);
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 
-        assertEquals(null, scope.newLocalEntry("b", String.class, true));   // duplicated
+        assertEquals(null, scope.newLocalEntry("b", of(String.class), true));   // duplicated
 
         // block scope
         scope.entryScope();
 
-        e = scope.newLocalEntry("c", boolean.class, true);
+        e = scope.newLocalEntry("c", of(boolean.class), true);
         assertEquals(1, e.index);
-        assertEquals(boolean.class, e.type);
+        assertEquals(of(boolean.class), e.type);
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 
         // override
-        e = scope.newLocalEntry("b", String.class, false);
+        e = scope.newLocalEntry("b", of(String.class), false);
         assertEquals(2, e.index);
-        assertEquals(String.class, e.type);
+        assertEquals(of(String.class), e.type);
         assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 
@@ -58,21 +64,21 @@ public class SymbolTableTest {
         e = scope.findEntry("a");
         assertNotNull(e);
         assertEquals(-1, e.index);
-        assertEquals(int.class, e.type);
+        assertEquals(of(int.class), e.type);
         assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.INSTANCE_FIELD));
 
         e = scope.findEntry("b");
         assertNotNull(e);
         assertEquals(2, e.index);
-        assertEquals(String.class, e.type);
+        assertEquals(of(String.class), e.type);
         assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 
         e = scope.findEntry("c");
         assertNotNull(e);
         assertEquals(1, e.index);
-        assertEquals(boolean.class, e.type);
+        assertEquals(of(boolean.class), e.type);
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 
@@ -86,9 +92,9 @@ public class SymbolTableTest {
         // reenter block scope
         scope.entryScope();
 
-        e = scope.newLocalEntry("d", float.class, true);
+        e = scope.newLocalEntry("d", of(float.class), true);
         assertEquals(1, e.index);
-        assertEquals(float.class, e.type);
+        assertEquals(of(float.class), e.type);
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 
@@ -99,15 +105,15 @@ public class SymbolTableTest {
         // long or double(consume 2 entry)
         scope.entryScope();
 
-        e = scope.newLocalEntry("d", long.class, false);
+        e = scope.newLocalEntry("d", of(long.class), false);
         assertEquals(1, e.index);
-        assertEquals(long.class, e.type);
+        assertEquals(of(long.class), e.type);
         assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 
-        e = scope.newLocalEntry("e", double.class, false);
+        e = scope.newLocalEntry("e", of(double.class), false);
         assertEquals(3, e.index);
-        assertEquals(double.class, e.type);
+        assertEquals(of(double.class), e.type);
         assertFalse(Utils.hasFlag(e.attribute, ClassScope.READ_ONLY));
         assertTrue(Utils.hasFlag(e.attribute, ClassScope.LOCAL_VAR));
 

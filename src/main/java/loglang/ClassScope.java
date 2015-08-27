@@ -1,8 +1,8 @@
 package loglang;
 
 import loglang.misc.Utils;
+import loglang.type.LType;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,7 +78,7 @@ public class ClassScope {
      * @return
      * if entry creation failed(found duplicated entry), return null.
      */
-    public SymbolEntry newLocalEntry(String symbolName, Type type, boolean readOnly) {
+    public SymbolEntry newLocalEntry(String symbolName, LType type, boolean readOnly) {
         // check state variable
         if(this.fieldMap.containsKey(Objects.requireNonNull(symbolName))) {
             return null;
@@ -99,7 +99,7 @@ public class ClassScope {
      * @return
      * if entry creation failed(found duplicated entry), return null.
      */
-    public SymbolEntry newStateEntry(String symbolName, Type type, boolean readOnly) {
+    public SymbolEntry newStateEntry(String symbolName, LType type, boolean readOnly) {
         // check duplication
         if(this.fieldMap.containsKey(Objects.requireNonNull(symbolName))) {
             return null;
@@ -131,7 +131,7 @@ public class ClassScope {
             return this.entryMap.get(symbolName);
         }
 
-        private SymbolEntry newEntry(String name, Type type, int attribute) {
+        private SymbolEntry newEntry(String name, LType type, int attribute) {
             Objects.requireNonNull(name);
             Objects.requireNonNull(type);
 
@@ -143,11 +143,7 @@ public class ClassScope {
 
             SymbolEntry entry = new SymbolEntry(this.curIndex, type, attribute);
             this.entryMap.put(name, entry);
-            this.curIndex++;
-
-            if(type.equals(long.class) || type.equals(double.class)) {
-                this.curIndex++;
-            }
+            this.curIndex += type.stackConsumption();
             return entry;
         }
     }
@@ -165,10 +161,10 @@ public class ClassScope {
          */
         public final int index;
 
-        public final Type type;
+        public final LType type;
         public final int attribute;
 
-        private SymbolEntry(int index, Type type, int attribute) {
+        private SymbolEntry(int index, LType type, int attribute) {
             this.index = index;
             this.type = type;
             this.attribute = attribute;

@@ -59,7 +59,7 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         // generate state (field)
         for(StateDeclNode child : caseNode.getStateDeclNodes()) {
             cw.visitField(ACC_PUBLIC, child.getName(),
-                    Type.getType(Types.actualClass(child.getInitValueNode().getType())).getDescriptor(),
+                    child.getInitValueNode().getType().asType().getDescriptor(),
                     null, null);
         }
 
@@ -72,7 +72,7 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         for(StateDeclNode child : caseNode.getStateDeclNodes()) {
             this.visit(child.getInitValueNode(), adapter);
             adapter.putField(Type.getType("L" + className + ";"), child.getName(),
-                    Type.getType(Types.actualClass(child.getInitValueNode().getType())));
+                    child.getInitValueNode().getType().asType());
         }
         adapter.returnValue();
         adapter.endMethod();
@@ -137,14 +137,14 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
     @Override
     public Void visitVarDeclNode(VarDeclNode node, GeneratorAdapter param) {
         this.visit(node.getInitValueNode(), param);
-        Type desc = Type.getType(Types.actualClass(node.getEntry().type));
+        Type desc = node.getEntry().type.asType();
         param.visitVarInsn(desc.getOpcode(ISTORE), node.getEntry().index);
         return null;
     }
 
     @Override
     public Void visitVarNode(VarNode node, GeneratorAdapter param) {
-        Type desc = Type.getType(Types.actualClass(node.getEntry().type));
+        Type desc = node.getEntry().type.asType();
         if(Utils.hasFlag(node.getEntry().attribute, ClassScope.LOCAL_VAR)) {
             param.visitVarInsn(desc.getOpcode(ILOAD), node.getEntry().index);
         } else {
@@ -158,11 +158,15 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         this.visit(node.getExprNode(), param);
 
         // pop stack top
-        java.lang.reflect.Type exprType = node.getExprNode().getType();
-        if(exprType.equals(long.class) || exprType.equals(double.class)) {
-            param.pop2();
-        } else {
+        switch(node.getExprNode().getType().stackConsumption()) {
+        case 1:
             param.pop();
+            break;
+        case 2:
+            param.pop2();
+            break;
+        default:
+            Utils.fatal("broken popNode type: " + node.getExprNode().getType());
         }
         return null;
     }

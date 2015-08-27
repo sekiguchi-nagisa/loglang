@@ -1,6 +1,7 @@
 package loglang;
 
-import java.lang.reflect.Type;
+import loglang.type.LType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -10,18 +11,18 @@ import java.util.Objects;
  */
 public abstract class Node {
     private int lineNum = -1;   //FIXME:
-    private Type type = null;
+    private LType type = null;
 
     /**
      *
      * @return
      * if not performed type checking, return null
      */
-    public Type getType() {
+    public LType getType() {
         return this.type;
     }
 
-    public void setType(Type type) {
+    public void setType(LType type) {
         this.type = Objects.requireNonNull(type);
     }
 
@@ -287,7 +288,7 @@ public abstract class Node {
         public PopNode(Node exprNode) {
             this.exprNode = Objects.requireNonNull(exprNode);
             Objects.requireNonNull(exprNode.getType());
-            this.setType(void.class);
+            this.setType(LType.voidType);
         }
 
         @Override

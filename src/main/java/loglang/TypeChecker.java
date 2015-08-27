@@ -1,10 +1,9 @@
 package loglang;
 
-import java.lang.reflect.Type;
+import loglang.type.LType;
 
 import static loglang.Node.*;
 import static loglang.SemanticException.*;
-import static loglang.Types.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/18.
@@ -18,24 +17,24 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     private ClassScope classScope = null;
 
 
-    public Node checkType(Type requiredType, Node targetNode, Type unacceptableType) {  //FIXME: coercion
+    public Node checkType(LType requiredType, Node targetNode, LType unacceptableType) {  //FIXME: coercion
         if(targetNode.getType() == null) {
             this.visit(targetNode);
         }
 
-        Type type = targetNode.getType();
+        LType type = targetNode.getType();
         if(type == null) {
             semanticError("broken node");
         }
 
         if(requiredType == null) {
-            if(unacceptableType != null && isSameOrBaseOf(unacceptableType, type)) {
+            if(unacceptableType != null && unacceptableType.isSameOrBaseOf(type)) {
                 semanticError("unacceptable type: " + type);
             }
             return targetNode;
         }
 
-        if(isSameOrBaseOf(requiredType, type)) {
+        if(requiredType.isSameOrBaseOf(type)) {
             return targetNode;
         }
 
@@ -49,7 +48,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
      * @return
      */
     public Node checkType(Node targetNode) {
-        return this.checkType(null, targetNode, void.class);
+        return this.checkType(null, targetNode, LType.voidType);
     }
 
     /**
@@ -58,7 +57,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
      * @param targetNode
      * @return
      */
-    public Node checkType(Type requiredType, Node targetNode) {
+    public Node checkType(LType requiredType, Node targetNode) {
         return this.checkType(requiredType, targetNode, null);
     }
 
@@ -86,25 +85,25 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     @Override
     public Node visitIntLiteralNode(IntLiteralNode node, Void param) {
-        node.setType(int.class);
+//        node.setType(int.class);  //FIXME:
         return node;
     }
 
     @Override
     public Node visitFloatLiteralNode(FloatLiteralNode node, Void param) {
-        node.setType(float.class);
+//        node.setType(float.class);    //FIXME:
         return node;
     }
 
     @Override
     public Node visitBoolLiteralNode(BoolLiteralNode node, Void param) {
-        node.setType(boolean.class);
+//        node.setType(boolean.class);  //FIXME:
         return node;
     }
 
     @Override
     public Node visitStringLiteralNode(StringLiteralNode node, Void param) {
-        node.setType(String.class);
+//        node.setType(String.class);   //FIXME:
         return node;
     }
 
@@ -122,14 +121,14 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         node.setLocalSize(this.classScope.getMaximumLocalSize());
         this.classScope.exitMethod();
 
-        node.setType(void.class);
+        node.setType(LType.voidType);
         return node;
     }
 
     @Override
     public Node visitBlockNode(BlockNode node, Void param) {
         node.getNodes().replaceAll(this::checkTypeAsStatement);
-        node.setType(void.class);
+        node.setType(LType.voidType);
         return node;
     }
 
@@ -137,13 +136,13 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     public Node visitStateDeclNode(StateDeclNode node, Void param) {
         node.setInitValueNode(this.checkType(node.getInitValueNode()));
 
-        Type type = node.getInitValueNode().getType();
+        LType type = node.getInitValueNode().getType();
         ClassScope.SymbolEntry entry = this.classScope.newStateEntry(node.getName(), type, false);
         if(entry == null) {
             semanticError("already defined state variable: " + node.getName());
         }
 
-        node.setType(void.class);
+        node.setType(LType.voidType);
         return node;
     }
 
@@ -151,14 +150,14 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     public Node visitVarDeclNode(VarDeclNode node, Void param) {
         node.setInitValueNode(this.checkType(node.getInitValueNode()));
 
-        Type type = node.getInitValueNode().getType();
+        LType type = node.getInitValueNode().getType();
         ClassScope.SymbolEntry entry = this.classScope.newLocalEntry(node.getName(), type, false);
         if(entry == null) {
             semanticError("already defined local variable: " + node.getName());
         }
 
         node.setEntry(entry);
-        node.setType(void.class);
+        node.setType(LType.voidType);
         return node;
     }
 
@@ -184,7 +183,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         for(CaseNode caseNode : node.getCaseNodes()) {
             this.checkTypeAsStatement(caseNode);
         }
-        node.setType(void.class);
+        node.setType(LType.voidType);
         return node;
     }
 }
