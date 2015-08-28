@@ -1,6 +1,10 @@
 package loglang;
 
 import loglang.type.LType;
+<<<<<<< HEAD
+import loglang.type.TypeEnv;
+=======
+>>>>>>> master
 
 import static loglang.Node.*;
 import static loglang.SemanticException.*;
@@ -9,6 +13,7 @@ import static loglang.SemanticException.*;
  * Created by skgchxngsxyz-osx on 15/08/18.
  */
 public class TypeChecker implements NodeVisitor<Node, Void> {
+    private final TypeEnv env = new TypeEnv();
     private final SymbolTable symbolTable = new SymbolTable();
 
     /**
@@ -85,25 +90,25 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     @Override
     public Node visitIntLiteralNode(IntLiteralNode node, Void param) {
-//        node.setType(int.class);  //FIXME:
+        node.setType(this.env.getIntType());
         return node;
     }
 
     @Override
     public Node visitFloatLiteralNode(FloatLiteralNode node, Void param) {
-//        node.setType(float.class);    //FIXME:
+        node.setType(this.env.getFloatType());
         return node;
     }
 
     @Override
     public Node visitBoolLiteralNode(BoolLiteralNode node, Void param) {
-//        node.setType(boolean.class);  //FIXME:
+        node.setType(this.env.getBoolType());
         return node;
     }
 
     @Override
     public Node visitStringLiteralNode(StringLiteralNode node, Void param) {
-//        node.setType(String.class);   //FIXME:
+        node.setType(this.env.getStringType());
         return node;
     }
 
