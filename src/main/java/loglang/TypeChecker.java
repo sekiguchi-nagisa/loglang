@@ -1,10 +1,7 @@
 package loglang;
 
 import loglang.type.LType;
-<<<<<<< HEAD
 import loglang.type.TypeEnv;
-=======
->>>>>>> master
 
 import static loglang.Node.*;
 import static loglang.SemanticException.*;
