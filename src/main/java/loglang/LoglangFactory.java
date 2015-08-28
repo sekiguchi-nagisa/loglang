@@ -34,7 +34,7 @@ public class LoglangFactory {
         List<String> casePatterns = this.getCasePatterns(matcherTree);
         Grammar patternGrammar = this.newPatternGrammar(patternTree, casePatterns);
 
-        Node.RootNode rootNode = (Node.RootNode) TreeTranslator.create().translate(matcherTree);
+        Node.RootNode rootNode = (Node.RootNode) new Tree2NodeTranslator().translate(matcherTree);
         new TypeChecker().visit(rootNode);
         ByteCodeGenerator gen = new ByteCodeGenerator();
         ByteCodeLoader loader = new ByteCodeLoader(gen.getPackageName());
