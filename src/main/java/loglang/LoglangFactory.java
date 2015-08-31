@@ -5,6 +5,7 @@ import loglang.jvm.ByteCodeLoader;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
 import loglang.peg.ParsingExpression;
+import loglang.peg.PrettyPrinter;
 import loglang.peg.Tree2ExprTranslator;
 import nez.NezOption;
 import nez.SourceContext;
@@ -111,6 +112,14 @@ public class LoglangFactory {
         for(CommonTree ruleTree : patternTree) {
             ruleExprs.add((ParsingExpression.RuleExpr) translator.translate(ruleTree));
         }
+
+        if(Config.dumpPEG) {
+            PrettyPrinter printer = new PrettyPrinter();
+            for(ParsingExpression.RuleExpr e : ruleExprs) {
+                printer.printRule(System.err, e);
+            }
+        }
+
 
 
 //        try {
