@@ -48,6 +48,4 @@ public class TypeEnv {
     public LType getStringType() {
         return stringType;
     }
-
-
 }

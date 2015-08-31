@@ -48,7 +48,7 @@ public class LType implements Comparable<LType> {
 
     public LType(Class<?> clazz, LType superType) {
         Objects.requireNonNull(clazz);
-        this.uniqueName = clazz.getSimpleName();
+        this.uniqueName = Mangler.mangleBasicType(clazz.getSimpleName());
         this.internalName = clazz.getCanonicalName();
         this.superType = superType;
         this.stackConsumption = stackConsumption(this.asType());
@@ -65,6 +65,11 @@ public class LType implements Comparable<LType> {
         return 1;
     }
 
+    /**
+     *
+     * @return
+     * mangled name
+     */
     public final String getUniqueName() {
         return uniqueName;
     }
@@ -170,5 +175,6 @@ public class LType implements Comparable<LType> {
     }
 
     public static LType voidType = new LType(void.class, null);
-    public static LType anyType = new LType("Any", Object.class.getCanonicalName(), null);
+    public static LType anyType =
+            new LType(Mangler.mangleBasicType("Any"), Object.class.getCanonicalName(), null);
 }
