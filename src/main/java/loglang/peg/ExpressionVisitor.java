@@ -24,4 +24,6 @@ public interface ExpressionVisitor<T, P> {
     T visitChoiceExpr(ChoiceExpr expr, P param);
     T visitNonTerminalExpr(NonTerminalExpr expr, P param);
     T visitLabeledExpr(LabeledExpr expr, P param);
+    T visitRuleExpr(RuleExpr expr, P param);
+    T visitTypedRuleExpr(TypedRuleExpr expr, P param);
 }

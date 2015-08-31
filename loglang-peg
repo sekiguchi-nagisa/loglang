@@ -1,0 +1,3 @@
+#!/bin/bash
+
+LL_PEG_ONLY=on ./loglang $@

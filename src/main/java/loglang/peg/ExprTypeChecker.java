@@ -93,4 +93,14 @@ public class ExprTypeChecker implements ExpressionVisitor<Void, Void> {
     public Void visitLabeledExpr(LabeledExpr expr, Void param) {
         return null;
     }
+
+    @Override
+    public Void visitRuleExpr(RuleExpr expr, Void param) {
+        return null;
+    }
+
+    @Override
+    public Void visitTypedRuleExpr(TypedRuleExpr expr, Void param) {
+        return null;
+    }
 }

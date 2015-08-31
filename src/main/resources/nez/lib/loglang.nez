@@ -39,10 +39,64 @@ PATTERN_BEGIN
     = '[[' WS '\n'
 
 PATTERN_END
-    = '\n]]' WS '\n'
+    = ']]' WS '\n'
 
+// peg definition
 PatternDefinition
-    = PATTERN_BEGIN { (!'\n]]' . )+ #PatternDefinition } PATTERN_END
+    = PATTERN_BEGIN {  (_ @RuleExpr)+ _ #PatternDefinition } PATTERN_END
+
+RuleExpr
+    = { @{ IDENTIFIER #Name } @TypeAnnotation _ '=' _ @ChoiceExpr #RuleExpr }
+
+TypeAnnotation
+    = _ ':' _ { IDENTIFIER #Name}
+    / {#Empty}
+
+ChoiceExpr
+    = SequenceExpr {@ _ '/' _ @SequenceExpr #ChoiceExpr }*
+
+SequenceExpr
+    = LabeledExpr {@ _ @LabeledExpr #SequenceExpr }*
+
+LabeledExpr
+    = {'$' @{ IDENTIFIER #Name } _ ':' _ @PrefixExpr  #LabeledExpr }
+    / PrefixExpr
+
+PrefixExpr
+    = { ('&' #AndExpr / '!' #NotExpr ) _ @SuffixExpr }
+    / SuffixExpr
+
+SuffixExpr
+    = PrimaryExpr {@ _ ('*' #ZeroMoreExpr / '+' #OneMoreExpr / '?' #OptionalExpr) }*
+
+PrimaryExpr
+    = '(' _ ChoiceExpr _ ')'
+    / { IDENTIFIER !(_ [:=]) #NonTerminalExpr }
+    / { '.' #AnyExpr }
+    / { '\''  ('\\\'' / '\\\\' / !['\n\r] .)*  '\'' #StringExpr }
+    / Charset
+
+Charset
+       = { '[' (@({ CHAR #Class } ({@ '-' @({ CHAR #Class }) #List })?))* ']'  #CharClassExpr }
+
+CHAR
+    = '\\u' HEX HEX HEX HEX
+    / '\\x' HEX HEX
+    / '\\n'
+    / '\\t'
+    / '\\\\'
+    / '\\r'
+    / '\\v'
+    / '\\f'
+    / '\\-'
+    / '\\]'
+    / !(']') .
+
+HEX
+    = [0-9A-Fa-f]
+
+
+// language definition
 
 MatchStatement
     = { ( _ @CaseStatement)+ #Match }

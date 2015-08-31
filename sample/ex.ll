@@ -4,12 +4,15 @@
 
 _ = [ \t\r\n]*
 Expr = _ Sum _
-Sum = Mul {@ _ ('+' #Add / '-' #Sub) _ @Mul}*
-Mul = Num {@ _ ('*' #Mul / '/' #Div) _ @Num}*
-Num = { '0' / [1-9][0-9]* #Int }
-    / '(' _ Expr _ ')'
+Sum = Mul ( _ ('+' / '-' ) _ Mul )*
+Mul = Num ( _ ('*' / '/' ) _ Num )*
+Int : int = '0' / [1-9][0-9]*
+Num = Int / '(' _ Expr _ ')'
 
-Time = _ { [0-2][1-9] ':' [0-5][0-9] ':' [0-5][0-9] #Time } _
+Hour : int = [0-2][1-9]
+Minute  : int = [0-5][0-9]
+Second : int = [0-5][0-9]
+Time = _  $h : Hour ':' $m : Minute ':' $s : Second _
 
 ]]
 

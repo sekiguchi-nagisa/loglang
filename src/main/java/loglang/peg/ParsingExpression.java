@@ -291,4 +291,49 @@ public abstract class ParsingExpression {
             return visitor.visitLabeledExpr(this, param);
         }
     }
+
+    public static class RuleExpr extends ParsingExpression {
+        protected final String ruleName;
+        protected final ParsingExpression expr;
+
+        public RuleExpr(String ruleName, ParsingExpression expr) {
+            this.ruleName = ruleName;
+            this.expr = expr;
+        }
+
+        public String getRuleName() {
+            return ruleName;
+        }
+
+        public ParsingExpression getExpr() {
+            return expr;
+        }
+
+        @Override
+        public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
+            return visitor.visitRuleExpr(this, param);
+        }
+    }
+
+    public static class TypedRuleExpr extends RuleExpr {
+        private final String typeName;
+
+        public TypedRuleExpr(String ruleName, String typeName, ParsingExpression expr) {
+            super(ruleName, expr);
+            this.typeName = typeName;
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        @Override
+        public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
+            return visitor.visitTypedRuleExpr(this, param);
+        }
+    }
+
+    public static void main(String[] args) {
+
+    }
 }

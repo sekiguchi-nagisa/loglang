@@ -8,4 +8,8 @@ if [ "${LL_DUMP_PATTERN}" != "" ]; then
     JVM_OPTION="${JVM_OPTION} -DdumpPattern=on"
 fi
 
+if [ "${LL_PEG_ONLY}" != "" ]; then
+    JVM_OPTION="${JVM_OPTION} -DpegOnly=on"
+fi
+
 java $JVM_OPTION -jar ./target/loglang-1.0-SNAPSHOT-jar-with-dependencies.jar $@
