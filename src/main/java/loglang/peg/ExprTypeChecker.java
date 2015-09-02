@@ -30,10 +30,12 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
             }
         }
 
-        // check type
+        // verify and check type
+        LabeledExprVerifier labeledExprVerifier = new LabeledExprVerifier();
         for(RuleExpr ruleExpr : rules) {
             this.visitedExprSet.clear();
             try {
+                labeledExprVerifier.visit(ruleExpr);
                 this.checkType(ruleExpr);
             } catch(SemanticException e) {
                 System.err.println(e.getMessage());

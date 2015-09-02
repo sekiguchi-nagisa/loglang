@@ -18,7 +18,7 @@ public class ImmutablePair<L, R> {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Pair &&
+        return obj instanceof ImmutablePair &&
                 this.left != null && this.left.equals(((ImmutablePair) obj).left) &&
                 this.right != null && this.right.equals(((ImmutablePair) obj).right);
 
