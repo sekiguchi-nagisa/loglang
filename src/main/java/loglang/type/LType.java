@@ -1,11 +1,10 @@
 package loglang.type;
 
+import loglang.misc.ImmutablePair;
+import loglang.misc.Pair;
 import org.objectweb.asm.Type;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/27.
@@ -289,6 +288,39 @@ public class LType implements Comparable<LType> {
                 }
             }
             return type.superType != null && this.isSameOrBaseOf(type.superType);
+        }
+    }
+
+    public static class StructureType extends LType {
+        /**
+         * key is field name.
+         * value is pair of field index and field type.
+         */
+        private final Map<String, ImmutablePair<Integer, LType>> fieldMap = new HashMap<>();
+
+        StructureType(String uniqueName) {
+            super(uniqueName, List.class.getCanonicalName(), anyType);  //FIXME: internal name
+        }
+
+        boolean addField(String fieldName, LType fieldType) {
+            Objects.requireNonNull(fieldName);
+            Objects.requireNonNull(fieldType);
+
+            if(this.fieldMap.containsKey(fieldName)) {
+                return false;
+            }
+            this.fieldMap.put(fieldName, ImmutablePair.of(this.fieldMap.size(), fieldType));
+            return true;
+        }
+
+        /**
+         *
+         * @param fieldName
+         * @return
+         * if not found, return null.
+         */
+        public ImmutablePair<Integer, LType> findField(String fieldName) {
+            return this.fieldMap.get(Objects.requireNonNull(fieldName));
         }
     }
 }

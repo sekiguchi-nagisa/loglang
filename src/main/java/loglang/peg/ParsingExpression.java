@@ -16,8 +16,8 @@ public abstract class ParsingExpression {
      */
     protected LType type;
 
-    public void setType(LType type) {
-        this.type = Objects.requireNonNull(type);
+    public LType setType(LType type) {
+        return this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -86,7 +86,7 @@ public abstract class ParsingExpression {
      * for Zero More and One More
      */
     public static class RepeatExpr extends ParsingExpression {
-        private final ParsingExpression exprNode;
+        private final ParsingExpression expr;
 
         /**
          * if true, represents zero more.
@@ -94,21 +94,21 @@ public abstract class ParsingExpression {
          */
         private final boolean zereMore;
 
-        private RepeatExpr(ParsingExpression exprNode, boolean zeroMore) {
-            this.exprNode = Objects.requireNonNull(exprNode);
+        private RepeatExpr(ParsingExpression expr, boolean zeroMore) {
+            this.expr = Objects.requireNonNull(expr);
             this.zereMore = zeroMore;
         }
 
-        public static RepeatExpr oneMore(ParsingExpression exprNode) {
-            return new RepeatExpr(exprNode, false);
+        public static RepeatExpr oneMore(ParsingExpression expr) {
+            return new RepeatExpr(expr, false);
         }
 
-        public static RepeatExpr zeroMore(ParsingExpression exprNode) {
-            return new RepeatExpr(exprNode, true);
+        public static RepeatExpr zeroMore(ParsingExpression expr) {
+            return new RepeatExpr(expr, true);
         }
 
-        public ParsingExpression getExprNode() {
-            return exprNode;
+        public ParsingExpression getExpr() {
+            return expr;
         }
 
         public boolean isZereMore() {
@@ -155,12 +155,12 @@ public abstract class ParsingExpression {
             this.andPredicate = andPredicate;
         }
 
-        public static PredicateExpr andPredicate(ParsingExpression exprNode) {
-            return new PredicateExpr(exprNode, true);
+        public static PredicateExpr andPredicate(ParsingExpression expr) {
+            return new PredicateExpr(expr, true);
         }
 
-        public static PredicateExpr notPredicate(ParsingExpression exprNode) {
-            return new PredicateExpr(exprNode, false);
+        public static PredicateExpr notPredicate(ParsingExpression expr) {
+            return new PredicateExpr(expr, false);
         }
 
         public ParsingExpression getExpr() {
@@ -181,21 +181,21 @@ public abstract class ParsingExpression {
         private List<ParsingExpression> exprs = new ArrayList<>();
 
         /**
-         * if leftNode or rightNode is SequenceExpr, merge to exprs.
-         * @param leftNode
-         * @param rightNode
+         * if leftExpr or rightExpr is SequenceExpr, merge to exprs.
+         * @param leftExpr
+         * @param rightExpr
          */
-        public SequenceExpr(ParsingExpression leftNode, ParsingExpression rightNode) {
-            if(leftNode instanceof SequenceExpr) {
-                exprs.addAll(((SequenceExpr) leftNode).getExprs());
+        public SequenceExpr(ParsingExpression leftExpr, ParsingExpression rightExpr) {
+            if(leftExpr instanceof SequenceExpr) {
+                exprs.addAll(((SequenceExpr) leftExpr).getExprs());
             } else {
-                exprs.add(Objects.requireNonNull(leftNode));
+                exprs.add(Objects.requireNonNull(leftExpr));
             }
 
-            if(rightNode instanceof SequenceExpr) {
-                exprs.addAll(((SequenceExpr) rightNode).getExprs());
+            if(rightExpr instanceof SequenceExpr) {
+                exprs.addAll(((SequenceExpr) rightExpr).getExprs());
             } else {
-                exprs.add(Objects.requireNonNull(rightNode));
+                exprs.add(Objects.requireNonNull(rightExpr));
             }
 
             // freeze
@@ -220,17 +220,17 @@ public abstract class ParsingExpression {
     public static class ChoiceExpr extends ParsingExpression {
         private List<ParsingExpression> exprs = new ArrayList<>();
 
-        public ChoiceExpr(ParsingExpression leftNode, ParsingExpression rightNode) {
-            if(leftNode instanceof ChoiceExpr) {
-                this.exprs.addAll(((ChoiceExpr) leftNode).getExprs());
+        public ChoiceExpr(ParsingExpression leftExpr, ParsingExpression rightExpr) {
+            if(leftExpr instanceof ChoiceExpr) {
+                this.exprs.addAll(((ChoiceExpr) leftExpr).getExprs());
             } else {
-                this.exprs.add(Objects.requireNonNull(leftNode));
+                this.exprs.add(Objects.requireNonNull(leftExpr));
             }
 
-            if(rightNode instanceof ChoiceExpr) {
-                this.exprs.addAll(((ChoiceExpr) rightNode).getExprs());
+            if(rightExpr instanceof ChoiceExpr) {
+                this.exprs.addAll(((ChoiceExpr) rightExpr).getExprs());
             } else {
-                this.exprs.add(Objects.requireNonNull(rightNode));
+                this.exprs.add(Objects.requireNonNull(rightExpr));
             }
 
             // freeze
@@ -331,9 +331,5 @@ public abstract class ParsingExpression {
         public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
             return visitor.visitTypedRuleExpr(this, param);
         }
-    }
-
-    public static void main(String[] args) {
-
     }
 }

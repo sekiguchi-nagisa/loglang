@@ -3,6 +3,8 @@ package loglang;
 import loglang.type.LType;
 import loglang.type.TypeEnv;
 
+import java.util.Objects;
+
 import static loglang.Node.*;
 import static loglang.SemanticException.*;
 
@@ -10,7 +12,7 @@ import static loglang.SemanticException.*;
  * Created by skgchxngsxyz-osx on 15/08/18.
  */
 public class TypeChecker implements NodeVisitor<Node, Void> {
-    private final TypeEnv env = new TypeEnv();
+    private final TypeEnv env;
     private final SymbolTable symbolTable = new SymbolTable();
 
     /**
@@ -18,6 +20,9 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
      */
     private ClassScope classScope = null;
 
+    public TypeChecker(TypeEnv env) {
+        this.env = Objects.requireNonNull(env);
+    }
 
     public Node checkType(LType requiredType, Node targetNode, LType unacceptableType) {  //FIXME: coercion
         if(targetNode.getType() == null) {

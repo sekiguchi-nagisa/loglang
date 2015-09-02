@@ -112,6 +112,24 @@ public class TypeEnv {
         return stringType;
     }
 
+
+    public boolean isPrimaryType(String simpleName) {
+        String mangledName = Mangler.mangleBasicType(simpleName);
+        LType type = this.getTypeByMangledName(mangledName);
+        return type != null && this.isPrimaryType(type);
+    }
+
+    /**
+     *
+     * @param type
+     * @return
+     * if type is int, float or string, return true.
+     */
+    public boolean isPrimaryType(LType type) {
+        return this.intType.equals(type) || this.floatType.equals(type) || this.stringType.equals(type);
+    }
+
+
     /**
      *
      * @param elementType
@@ -182,5 +200,33 @@ public class TypeEnv {
             type = this.registerType(mangledName, new UnionType(mangledName, elementTypes));
         }
         return (UnionType) type;
+    }
+
+    /**
+     *
+     * @param name
+     * must be simple name
+     * @return
+     * @throws SemanticException
+     * if already defined.
+     */
+    public StructureType newStructureType(String name) throws SemanticException {
+        String mangledName = Mangler.mangleBasicType(Objects.requireNonNull(name));
+        return (StructureType) this.registerType(mangledName, new StructureType(mangledName));
+    }
+
+
+    /**
+     *
+     * @param type
+     * @param fieldName
+     * @param fieldType
+     * @throws SemanticException
+     * if already defined.
+     */
+    public void defineField(StructureType type, String fieldName, LType fieldType) throws SemanticException{
+        if(!type.addField(fieldName, fieldType)) {
+            semanticError("already undefined field: " + fieldName + ", in " + type.getSimpleName());
+        }
     }
 }

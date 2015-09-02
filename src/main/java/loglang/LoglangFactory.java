@@ -4,9 +4,11 @@ import loglang.jvm.ByteCodeGenerator;
 import loglang.jvm.ByteCodeLoader;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
+import loglang.peg.ExprTypeChecker;
 import loglang.peg.ParsingExpression;
 import loglang.peg.PrettyPrinter;
 import loglang.peg.Tree2ExprTranslator;
+import loglang.type.TypeEnv;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
@@ -30,12 +32,14 @@ public class LoglangFactory {
     public final static String grammarFileName = "loglang.nez";
 
     public Loglang newLoglang(String scriptName) {
+        TypeEnv env = new TypeEnv();
+
         CommonTree scriptTree = this.newScriptTree(scriptName);
         CommonTree patternTree = getAndCheckTag(scriptTree, 0, "PatternDefinition");
         CommonTree matcherTree = getAndCheckTag(scriptTree, 1, "Match");
 
         List<String> casePatterns = this.getCasePatterns(matcherTree);
-        Grammar patternGrammar = this.newPatternGrammar(patternTree, casePatterns);
+        Grammar patternGrammar = this.newPatternGrammar(env, patternTree, casePatterns);
 
         if(Config.pegOnly) {
             System.out.println("+++ peg only +++");
@@ -43,7 +47,7 @@ public class LoglangFactory {
         }
 
         Node.RootNode rootNode = (Node.RootNode) new Tree2NodeTranslator().translate(matcherTree);
-        new TypeChecker().visit(rootNode);
+        new TypeChecker(env).visit(rootNode);
         ByteCodeGenerator gen = new ByteCodeGenerator();
         ByteCodeLoader loader = new ByteCodeLoader(gen.getPackageName());
         for(Node.CaseNode caseNode : rootNode.getCaseNodes()) {
@@ -106,7 +110,7 @@ public class LoglangFactory {
      * @param casePatterns
      * @return
      */
-    private Grammar newPatternGrammar(CommonTree patternTree, List<String> casePatterns) {
+    private Grammar newPatternGrammar(TypeEnv env, CommonTree patternTree, List<String> casePatterns) {
         Tree2ExprTranslator translator = new Tree2ExprTranslator();
         List<ParsingExpression.RuleExpr> ruleExprs = new ArrayList<>();
         for(CommonTree ruleTree : patternTree) {
@@ -114,12 +118,25 @@ public class LoglangFactory {
         }
 
         if(Config.dumpPEG) {
+            System.err.println("++++ dump untyped PEG ++++");
             PrettyPrinter printer = new PrettyPrinter();
             for(ParsingExpression.RuleExpr e : ruleExprs) {
                 printer.printRule(System.err, e);
             }
         }
 
+        // check type
+        if(!new ExprTypeChecker(env).checkType(ruleExprs)) {
+            System.exit(1);
+        }
+
+        if(Config.dumpPEG) {
+            System.err.println("++++ dump typed PEG ++++");
+            PrettyPrinter printer = new PrettyPrinter();
+            for(ParsingExpression.RuleExpr e : ruleExprs) {
+                printer.printRule(System.err, e);
+            }
+        }
 
 
 //        try {

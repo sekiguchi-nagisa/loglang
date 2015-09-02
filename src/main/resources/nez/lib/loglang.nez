@@ -49,7 +49,7 @@ RuleExpr
     = { @{ IDENTIFIER #Name } @TypeAnnotation _ '=' _ @ChoiceExpr #RuleExpr }
 
 TypeAnnotation
-    = _ ':' _ { IDENTIFIER #Name}
+    = _ ':' _ { IDENTIFIER #Name }
     / {#Empty}
 
 ChoiceExpr
@@ -71,7 +71,7 @@ SuffixExpr
 
 PrimaryExpr
     = '(' _ ChoiceExpr _ ')'
-    / { IDENTIFIER !(_ [:=]) #NonTerminalExpr }
+    / { IDENTIFIER !(_ [:=<]) #NonTerminalExpr }
     / { '.' #AnyExpr }
     / { '\''  ('\\\'' / '\\\\' / !['\n\r] .)*  '\'' #StringExpr }
     / Charset
