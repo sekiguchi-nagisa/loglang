@@ -2,6 +2,9 @@ package loglang.type;
 
 import org.objectweb.asm.Type;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -11,24 +14,24 @@ public class LType implements Comparable<LType> {
     /**
      * mangled name( [_a-zA-Z][_a-zA-Z0-9]* )
      */
-    private final String uniqueName;
+    protected final String uniqueName;
 
     /**
      * must be fully qualify class name.
      */
-    private final String internalName;
+    protected final String internalName;
 
     /**
      * may be null, (if Any or Void type)
      */
-    private final LType superType;
+    protected final LType superType;
 
     /**
      * if type is void, 0.
      * if type is long or double type, 2.
      * otherwise 1.
      */
-    private final int stackConsumption;
+    protected final int stackConsumption;
 
     /**
      *
@@ -78,6 +81,10 @@ public class LType implements Comparable<LType> {
         return internalName;
     }
 
+    public final String getSimpleName() {
+        return Mangler.demangle(this.uniqueName);
+    }
+
     public LType getSuperType() {
         return superType;
     }
@@ -119,7 +126,7 @@ public class LType implements Comparable<LType> {
      */
     public boolean isSameOrBaseOf(LType type) {
         return this.equals(Objects.requireNonNull(type))
-                || (this.superType != null && this.superType.isSameOrBaseOf(type));
+                || (type.superType != null && this.isSameOrBaseOf(type.superType));
     }
 
     /**
@@ -155,7 +162,7 @@ public class LType implements Comparable<LType> {
 
     @Override
     public String toString() {
-        return this.getUniqueName();
+        return this.getSimpleName();
     }
 
     @Override
@@ -177,4 +184,111 @@ public class LType implements Comparable<LType> {
     public static LType voidType = new LType(void.class, null);
     public static LType anyType =
             new LType(Mangler.mangleBasicType("Any"), Object.class.getCanonicalName(), null);
+
+
+    public static class ArrayType extends LType {
+        private final LType elementType;
+
+        ArrayType(String uniqueName, LType elementType) {
+            super(uniqueName, List.class.getCanonicalName(), anyType);
+            this.elementType = Objects.requireNonNull(elementType);
+        }
+
+        public LType getElementType() {
+            return elementType;
+        }
+
+        public boolean isSameOrBaseOf(LType type) {
+            if(type instanceof ArrayType) {
+                return this.elementType.isSameOrBaseOf(((ArrayType) type).elementType);
+            }
+            return this.superType != null && this.superType.isSameOrBaseOf(type);
+        }
+    }
+
+    public static class OptionalType extends LType {
+        private final LType elementType;
+
+        OptionalType(String uniqueName, LType type) {
+            super(uniqueName, List.class.getCanonicalName(), anyType);
+            this.elementType = Objects.requireNonNull(type);
+        }
+
+        public LType getElementType() {
+            return elementType;
+        }
+
+        public boolean isSameOrBaseOf(LType type) {
+            if(type instanceof OptionalType) {
+                return this.elementType.isSameOrBaseOf(((OptionalType) type).elementType);
+            }
+            return type.superType != null && this.isSameOrBaseOf(type.superType);
+        }
+    }
+
+    public static class TupleType extends LType {
+        private final List<LType> elementTypes;
+
+        TupleType(String uniqueName, LType[] types) {
+            super(uniqueName, List.class.getCanonicalName(), anyType);
+            this.elementTypes = Collections.unmodifiableList(Arrays.asList(types));
+        }
+
+        public List<LType> getElementTypes() {
+            return elementTypes;
+        }
+
+        public boolean isSameOrBaseOf(LType type) {
+            if(type instanceof TupleType) {
+                return this.elementTypes.equals(((TupleType) type).elementTypes);
+            }
+            return type.superType != null && this.isSameOrBaseOf(type.superType);
+        }
+    }
+
+    public static class UnionType extends LType {
+        /**
+         * sorted
+         */
+        private final List<LType> elementTypes;
+
+        /**
+         *
+         * @param uniqueName
+         * @param types
+         * not contains duplicated type.
+         * not contains union type.
+         * must be sorted
+         */
+        UnionType(String uniqueName, LType[] types) {
+            super(uniqueName, List.class.getCanonicalName(), anyType);  //FIXME: internal name
+            this.elementTypes = Collections.unmodifiableList(Arrays.asList(types));
+        }
+
+        public List<LType> getElementTypes() {
+            return elementTypes;
+        }
+
+        public boolean isSameOrBaseOf(LType type) {
+            if(type instanceof UnionType) {
+                boolean match = true;
+                for(LType t : ((UnionType) type).elementTypes) {
+                    if(!this.isSameOrBaseOf(t)) {
+                        match = false;
+                        break;
+                    }
+                }
+                if(match) {
+                    return match;
+                }
+            } else {
+                for(LType e : this.elementTypes) {
+                    if(e.isSameOrBaseOf(type)) {
+                        return true;
+                    }
+                }
+            }
+            return type.superType != null && this.isSameOrBaseOf(type.superType);
+        }
+    }
 }
