@@ -41,12 +41,6 @@ public class Pair<L, R> {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("(")
-                .append(this.left)
-                .append(", ")
-                .append(this.right)
-                .append(")")
-                .toString();
+        return "(" + this.left + ", " + this.right + ")";
     }
 }

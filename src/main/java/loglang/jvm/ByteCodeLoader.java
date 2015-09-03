@@ -56,7 +56,7 @@ public class ByteCodeLoader extends ClassLoader {
             if((parent instanceof ByteCodeLoader) || !name.startsWith(this.allowedPackageName)) {
                 try {
                     foundClass = parent.loadClass(name);
-                } catch(ClassNotFoundException e) {
+                } catch(ClassNotFoundException ignored) {
                 }
             }
         }
@@ -130,7 +130,7 @@ public class ByteCodeLoader extends ClassLoader {
         }
     }
 
-    private final static String toBinaryName(String className) {
+    private static String toBinaryName(String className) {
         return className.replace('/', '.');
     }
 }

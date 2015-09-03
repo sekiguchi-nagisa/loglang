@@ -21,12 +21,6 @@ public class LongRange {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("(pos=")
-                .append(this.pos)
-                .append(", len=")
-                .append(this.len)
-                .append(")")
-                .toString();
+        return "(pos=" + this.pos + ", len=" + this.len + ")";
     }
 }

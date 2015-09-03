@@ -4,7 +4,6 @@ import loglang.misc.LongRange;
 import loglang.type.LType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,7 +41,7 @@ public abstract class Node {
      * @return
      */
     public boolean hasReturnValue() {
-        return !this.type.equals(void.class);
+        return !this.type.isVoid();
     }
 
     public abstract <T, P> T accept(NodeVisitor<T, P> visitor, P param);

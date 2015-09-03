@@ -123,7 +123,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
             return expr.setType(types.get(0));
         } else {
             try {
-                return expr.setType(this.env.getTupleType(types.toArray(new LType[0])));
+                return expr.setType(this.env.getTupleType(types.toArray(new LType[types.size()])));
             } catch(TypeException e) {
                 throw new SemanticException(expr.getRange(), e);
             }
@@ -159,7 +159,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
             return expr.setType(types.get(0));
         } else {
             try {
-                return expr.setType(this.env.getUnionType(types.toArray(new LType[0])));
+                return expr.setType(this.env.getUnionType(types.toArray(new LType[types.size()])));
             } catch(TypeException e) {
                 throw new SemanticException(expr.getRange(), e);
             }

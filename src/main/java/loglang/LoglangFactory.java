@@ -97,9 +97,7 @@ public class LoglangFactory {
 
     private List<String> getCasePatterns(CommonTree matcherTree) {
         ArrayList<String> casePatterns = new ArrayList<>();
-        int size = matcherTree.size();
-        for(int i = 0; i < size; i++) {
-            CommonTree caseTree = matcherTree.get(i);
+        for(CommonTree caseTree : matcherTree) {
             casePatterns.add(caseTree.get(0).getText());
         }
         return casePatterns;

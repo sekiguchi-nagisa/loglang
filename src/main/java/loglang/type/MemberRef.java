@@ -49,15 +49,7 @@ public abstract class MemberRef {
 
         @Override
         public String toString() {
-            return new StringBuilder()
-                    .append("(")
-                    .append(this.fieldType)
-                    .append(" ")
-                    .append(this.getInternalName())
-                    .append(" in ")
-                    .append(this.getOwnerType())
-                    .append(")")
-                    .toString();
+            return "(" + this.fieldType + " " + this.getInternalName() + " in " + this.getOwnerType() + ")";
         }
 
         @Override

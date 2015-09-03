@@ -41,7 +41,7 @@ public interface TypeToken {
             this.name = Objects.requireNonNull(name);
             this.elementTypeTokens =
                     Collections.unmodifiableList(
-                            Arrays.asList(elementTypeTokens.toArray(new TypeToken[0])));
+                            Arrays.asList(elementTypeTokens.toArray(new TypeToken[elementTypeTokens.size()])));
         }
 
         public String getName() {

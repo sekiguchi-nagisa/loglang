@@ -1,7 +1,6 @@
 package loglang.type;
 
 import loglang.misc.ImmutablePair;
-import loglang.misc.Pair;
 import org.objectweb.asm.Type;
 
 import java.util.*;
@@ -282,7 +281,7 @@ public class LType implements Comparable<LType> {
                     }
                 }
                 if(match) {
-                    return match;
+                    return true;
                 }
             } else {
                 for(LType e : this.elementTypes) {

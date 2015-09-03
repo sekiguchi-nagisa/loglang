@@ -8,11 +8,7 @@ public class Mangler {
     private Mangler(){}
 
     public static String mangleBasicType(String name) {
-        return new StringBuilder()
-                .append("B")
-                .append(name.length())
-                .append(name)
-                .toString();
+        return "B" + name.length() + name;
     }
 
     /**
