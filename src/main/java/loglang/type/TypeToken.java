@@ -1,13 +1,15 @@
 package loglang.type;
 
+import loglang.TypeException;
+
 import java.util.*;
-import static loglang.SemanticException.*;
+import static loglang.TypeException.*;
 
 /**
  * Created by skgchxngsxyz-opensuse on 15/09/02.
  */
 public interface TypeToken {
-    LType toType(TypeEnv env);
+    LType toType(TypeEnv env) throws TypeException;
 
     class BasicTypeToken implements TypeToken {
         private final String name;
@@ -26,7 +28,7 @@ public interface TypeToken {
         }
 
         @Override
-        public LType toType(TypeEnv env) {
+        public LType toType(TypeEnv env) throws TypeException {
             return Objects.requireNonNull(env).getBasicType(this.name);
         }
     }
@@ -62,31 +64,33 @@ public interface TypeToken {
         }
 
         @Override
-        public LType toType(TypeEnv env) {
+        public LType toType(TypeEnv env) throws TypeException {
             Objects.requireNonNull(env);
             switch(this.name) {
             case "Array":
-                if(this.elementTypeTokens.size() != 1) {  semanticError("Array type require 1 element"); }
+                if(this.elementTypeTokens.size() != 1) {  typeError("Array type require 1 element"); }
                 return env.getArrayType(this.elementTypeTokens.get(0).toType(env));
             case "Optional":
-                if(this.elementTypeTokens.size() != 1) {  semanticError("Optional type require 1 element"); }
+                if(this.elementTypeTokens.size() != 1) {  typeError("Optional type require 1 element"); }
                 return env.getOptionalType(this.elementTypeTokens.get(0).toType(env));
-            case "Tuple":
-                return env.getTupleType(
-                        this.elementTypeTokens
-                                .stream()
-                                .map((t) -> t.toType(env))
-                                .toArray(LType[]::new)
-                );
-            case "Union":
-                return env.getUnionType(
-                        this.elementTypeTokens
-                                .stream()
-                                .map((t) -> t.toType(env))
-                                .toArray(LType[]::new)
-                );
+            case "Tuple": {
+                final int size = this.elementTypeTokens.size();
+                LType[] types = new LType[size];
+                for(int i = 0; i < size; i++) {
+                    types[i] = this.elementTypeTokens.get(i).toType(env);
+                }
+                return env.getTupleType(types);
             }
-            semanticError("illegal composed type");
+            case "Union":{
+                final int size = this.elementTypeTokens.size();
+                LType[] types = new LType[size];
+                for(int i = 0; i < size; i++) {
+                    types[i] = this.elementTypeTokens.get(i).toType(env);
+                }
+                return env.getUnionType(types);
+            }
+            }
+            typeError("illegal composed type");
             return null;
         }
     }

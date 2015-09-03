@@ -1,6 +1,7 @@
 package loglang;
 
 import static loglang.Node.*;
+import static nez.ast.ASTHelper.*;
 
 import nez.ast.CommonTree;
 
@@ -9,7 +10,7 @@ import nez.ast.CommonTree;
  */
 public class Tree2NodeTranslator extends TreeTranslator<Node> {{
     this.add("Match", (t) -> {  // entry point
-        RootNode node = new RootNode();
+        RootNode node = new RootNode(range(t));
         for(CommonTree child : t) {
             node.addCaseNode((CaseNode) this.translate(child));
         }
@@ -22,7 +23,7 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
     this.add("CaseBlock", (t) -> {
         assert t.size() == 2;
 
-        CaseNode caseNode = new CaseNode(null); //FIXME: label
+        CaseNode caseNode = new CaseNode(range(t), null); //FIXME: label
         // state decl
         for(CommonTree child : t.get(0)) {
             caseNode.addStateDeclNode((StateDeclNode) this.translate(child));
@@ -40,16 +41,16 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
 
     this.add("Integer", (t) -> {
         int value = Integer.parseInt(t.getText());
-        return new IntLiteralNode(value);
+        return new IntLiteralNode(range(t), value);
     });
 
     this.add("Float", (t) -> {
         float value = Float.parseFloat(t.getText());
-        return new FloatLiteralNode(value);
+        return new FloatLiteralNode(range(t), value);
     });
 
-    this.add("True", (t) -> new BoolLiteralNode(true));
-    this.add("False", (t) -> new BoolLiteralNode(false));
+    this.add("True", (t) -> new BoolLiteralNode(range(t), true));
+    this.add("False", (t) -> new BoolLiteralNode(range(t), false));
 
     this.add("String", (t) -> {
         String src = t.getText();
@@ -95,22 +96,22 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
             sb.append(ch);
         }
 
-        return new StringLiteralNode(sb.toString());
+        return new StringLiteralNode(range(t), sb.toString());
     });
 
-    this.add("Variable", (t) -> new VarNode(t.getText()));
+    this.add("Variable", (t) -> new VarNode(range(t), t.getText()));
 
     this.add("State", (t) -> {
         assert t.size() == 2;
         String name = t.get(0).getText();
         Node initValueNode = this.translate(t.get(1));
-        return new StateDeclNode(name, initValueNode);
+        return new StateDeclNode(range(t), name, initValueNode);
     });
 
     this.add("VarDecl", (t) -> {
         assert t.size() == 2;
         String name = t.get(0).getText();
         Node initValueNode = this.translate(t.get(1));
-        return new VarDeclNode(name, initValueNode);
+        return new VarDeclNode(range(t), name, initValueNode);
     });
 }}

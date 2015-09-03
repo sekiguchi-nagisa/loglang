@@ -1,6 +1,7 @@
 package loglang.peg;
 
 import loglang.SemanticException;
+import loglang.TypeException;
 import loglang.type.LType;
 import loglang.type.TypeEnv;
 
@@ -22,11 +23,11 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         this.env = Objects.requireNonNull(env);
     }
 
-    public boolean checkType(List<RuleExpr> rules) {   // entry point
+    public void checkType(List<RuleExpr> rules) {   // entry point
         // register rule
         for(RuleExpr ruleExpr : rules) {
             if(Objects.nonNull(this.ruleMap.put(ruleExpr.getRuleName(), ruleExpr))) {
-                semanticError("duplicated rule: " + ruleExpr.getRuleName());
+                semanticError(ruleExpr.getRange(), "duplicated rule: " + ruleExpr.getRuleName());
             }
         }
 
@@ -34,15 +35,9 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         LabeledExprVerifier labeledExprVerifier = new LabeledExprVerifier();
         for(RuleExpr ruleExpr : rules) {
             this.visitedExprSet.clear();
-            try {
-                labeledExprVerifier.visit(ruleExpr);
-                this.checkType(ruleExpr);
-            } catch(SemanticException e) {
-                System.err.println(e.getMessage());
-                return false;
-            }
+            labeledExprVerifier.visit(ruleExpr);
+            this.checkType(ruleExpr);
         }
-        return true;
     }
 
     public LType checkType(ParsingExpression expr) {
@@ -52,21 +47,21 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     public LType checkType(LType requiredType, ParsingExpression expr) {
         LType type = expr.getType() != null ? expr.getType() : this.visit(expr);
         if(type == null) {
-            semanticError("broken visit" + expr.getClass().getSimpleName());
+            semanticError(expr.getRange(), "broken visit" + expr.getClass().getSimpleName());
         }
 
         if(requiredType == null || requiredType.isSameOrBaseOf(type)) {
             return type;
         }
 
-        semanticError("require: " + requiredType + ", but is: " + type);
+        semanticError(expr.getRange(), "require: " + requiredType + ", but is: " + type);
         return null;
     }
 
     @Override
     public LType visit(ParsingExpression expr, Void param) {
         if(!this.visitedExprSet.add(Objects.requireNonNull(expr))) {
-            semanticError("detect circular reference");
+            semanticError(expr.getRange(), "detect circular reference");
         }
         return expr.accept(this, param);
     }
@@ -89,14 +84,21 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     @Override
     public LType visitRepeatExpr(RepeatExpr expr, Void param) {
         LType exprType = this.checkType(expr.getExpr());
-        return expr.setType(exprType.isVoid() ? this.env.getVoidType() : this.env.getArrayType(exprType));
+        try {
+            return expr.setType(exprType.isVoid() ? this.env.getVoidType() : this.env.getArrayType(exprType));
+        } catch(TypeException e) {
+            throw new SemanticException(expr.getRange(), e);
+        }
     }
 
     @Override
     public LType visitOptionalExpr(OptionalExpr expr, Void param) {
         LType exprType = this.checkType(expr.getExpr());
-        return expr.setType(exprType.isVoid() ? this.env.getVoidType() : this.env.getOptionalType(exprType)
-        );
+        try {
+            return expr.setType(exprType.isVoid() ? this.env.getVoidType() : this.env.getOptionalType(exprType));
+        } catch(TypeException e) {
+            throw new SemanticException(expr.getRange(), e);
+        }
     }
 
     @Override
@@ -120,7 +122,11 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         } else if(types.size() == 1) {
             return expr.setType(types.get(0));
         } else {
-            return expr.setType(this.env.getTupleType(types.toArray(new LType[0])));
+            try {
+                return expr.setType(this.env.getTupleType(types.toArray(new LType[0])));
+            } catch(TypeException e) {
+                throw new SemanticException(expr.getRange(), e);
+            }
         }
     }
 
@@ -134,7 +140,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
             }
         }
         if(!types.isEmpty() && types.size() < expr.getExprs().size()) {
-            semanticError("not allow void type");
+            semanticError(expr.getRange(), "not allow void type");
         }
 
         if(types.isEmpty()) {
@@ -152,7 +158,11 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         if(sameAll) {
             return expr.setType(types.get(0));
         } else {
-            return expr.setType(this.env.getUnionType(types.toArray(new LType[0])));
+            try {
+                return expr.setType(this.env.getUnionType(types.toArray(new LType[0])));
+            } catch(TypeException e) {
+                throw new SemanticException(expr.getRange(), e);
+            }
         }
     }
 
@@ -160,7 +170,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     public LType visitNonTerminalExpr(NonTerminalExpr expr, Void param) {
         ParsingExpression targetExpr = this.ruleMap.get(expr.getName());
         if(targetExpr == null) {
-            semanticError("undefined rule: " + expr.getName());
+            semanticError(expr.getRange(), "undefined rule: " + expr.getName());
         }
         return expr.setType(this.checkType(targetExpr));
     }
@@ -174,7 +184,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     @Override
     public LType visitRuleExpr(RuleExpr expr, Void param) {
         if(this.labeledExprDetector.visit(expr.getExpr())) {
-            semanticError("not need label");
+            semanticError(expr.getRange(), "not need label");
         }
         return expr.setType(this.checkType(expr.getExpr()));
     }
@@ -184,28 +194,32 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         boolean primary = this.env.isPrimaryType(expr.getTypeName());
         boolean hasLabel = this.labeledExprDetector.visit(expr.getExpr());
 
-        if(primary && !hasLabel) {  // treat as primary type
-            LType type = this.env.getBasicType(expr.getTypeName());
-            expr.setType(type);
+        try {
+            if(primary && !hasLabel) {  // treat as primary type
+                LType type = this.env.getBasicType(expr.getTypeName());
+                expr.setType(type);
 
-            this.checkType(this.env.getVoidType(), expr.getExpr());
-            return type;
-        } else if(!primary && hasLabel) {   // treat as structure type
-            LType.StructureType type = this.env.newStructureType(expr.getTypeName());
-            expr.setType(type);
+                this.checkType(this.env.getVoidType(), expr.getExpr());
+                return type;
+            } else if(!primary && hasLabel) {   // treat as structure type
+                LType.StructureType type = this.env.newStructureType(expr.getTypeName());
+                expr.setType(type);
 
-            this.checkType(this.env.getVoidType(), expr.getExpr());
+                this.checkType(this.env.getVoidType(), expr.getExpr());
 
-            // define field
-            for(ParsingExpression e : ((SequenceExpr) expr.getExpr()).getExprs()) {
-                if(e instanceof LabeledExpr) {
-                    this.env.defineField(type, ((LabeledExpr) e).getLabelName(), e.getType());
+                // define field
+                for(ParsingExpression e : ((SequenceExpr) expr.getExpr()).getExprs()) {
+                    if(e instanceof LabeledExpr) {
+                        this.env.defineField(type, ((LabeledExpr) e).getLabelName(), e.getType());
+                    }
                 }
+                return type;
+            } else {
+                semanticError(expr.getRange(), "illegal type annotation");
+                return null;
             }
-            return type;
-        } else {
-            semanticError("illegal type annotation");
-            return null;
+        } catch(TypeException e) {
+            throw new SemanticException(expr.getRange(), e);
         }
     }
 }

@@ -73,6 +73,6 @@ public class LabeledExprVerifier extends BaseVisitor<Void, Void> {
             return this.visit(expr.getExpr());
         }
         this.exprStack.clear();
-        throw new SemanticException("not allowed label");
+        throw new SemanticException(expr.getRange(), "not allowed label");
     }
 }

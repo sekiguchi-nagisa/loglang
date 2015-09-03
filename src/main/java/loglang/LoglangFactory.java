@@ -9,15 +9,14 @@ import loglang.type.TypeEnv;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
+import nez.ast.Source;
 import nez.ast.Tag;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -45,7 +44,11 @@ public class LoglangFactory {
         }
 
         Node.RootNode rootNode = (Node.RootNode) new Tree2NodeTranslator().translate(matcherTree);
-        new TypeChecker(env).visit(rootNode);
+        try {
+            new TypeChecker(env).visit(rootNode);
+        } catch(SemanticException e) {
+            reportErrorAndExit(matcherTree.getSource(), e);
+        }
         ByteCodeGenerator gen = new ByteCodeGenerator();
         ByteCodeLoader loader = new ByteCodeLoader(gen.getPackageName());
         for(Node.CaseNode caseNode : rootNode.getCaseNodes()) {
@@ -124,8 +127,10 @@ public class LoglangFactory {
         }
 
         // check type
-        if(!new ExprTypeChecker(env).checkType(ruleExprs)) {
-            System.exit(1);
+        try {
+            new ExprTypeChecker(env).checkType(ruleExprs);
+        } catch(SemanticException e) {
+            reportErrorAndExit(patternTree.getSource(), e);
         }
 
         if(Config.dumpTypedPEG) {
@@ -166,5 +171,10 @@ public class LoglangFactory {
         CommonTree child = tree.get(index);
         assert child.is(Tag.tag(tagName));
         return child;
+    }
+
+    private static void reportErrorAndExit(Source source, SemanticException e) {
+        System.err.println(source.formatPositionLine("semantic error", e.getRange().pos, e.getMessage()));
+        System.exit(1);
     }
 }

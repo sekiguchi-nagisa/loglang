@@ -1,5 +1,6 @@
 package loglang;
 
+import loglang.misc.LongRange;
 import loglang.type.LType;
 
 import java.util.ArrayList;
@@ -11,8 +12,17 @@ import java.util.Objects;
  * Created by skgchxngsxyz-osx on 15/08/18.
  */
 public abstract class Node {
-    private int lineNum = -1;   //FIXME:
+    private final LongRange range;
     private LType type = null;
+
+
+    public Node(LongRange range) {
+        this.range = range;
+    }
+
+    public LongRange getRange() {
+        return range;
+    }
 
     /**
      *
@@ -40,7 +50,8 @@ public abstract class Node {
     public static class IntLiteralNode extends Node {
         private final int value;
 
-        public IntLiteralNode(int value) {
+        public IntLiteralNode(LongRange range, int value) {
+            super(range);
             this.value = value;
         }
 
@@ -57,7 +68,8 @@ public abstract class Node {
     public static class FloatLiteralNode extends Node {
         private final float value;
 
-        public FloatLiteralNode(float value) {
+        public FloatLiteralNode(LongRange range, float value) {
+            super(range);
             this.value = value;
         }
 
@@ -74,7 +86,8 @@ public abstract class Node {
     public static class BoolLiteralNode extends Node {
         private final boolean value;
 
-        public BoolLiteralNode(boolean value) {
+        public BoolLiteralNode(LongRange range, boolean value) {
+            super(range);
             this.value = value;
         }
 
@@ -91,7 +104,8 @@ public abstract class Node {
     public static class StringLiteralNode extends Node {
         private final String value;
 
-        public StringLiteralNode(String value) {
+        public StringLiteralNode(LongRange range, String value) {
+            super(range);
             this.value = Objects.requireNonNull(value);
         }
 
@@ -107,7 +121,7 @@ public abstract class Node {
 
     public static class CaseNode extends Node {
         private final List<StateDeclNode> stateDeclNodes = new ArrayList<>();
-        private final BlockNode blockNode = new BlockNode();
+        private final BlockNode blockNode;
 
         /**
          * may be null if has no label
@@ -119,7 +133,9 @@ public abstract class Node {
          */
         private int localSize = 0;
 
-        public CaseNode(String labelName) {
+        public CaseNode(LongRange range, String labelName) {
+            super(range);
+            this.blockNode = new BlockNode(range);
             this.labelName = labelName;
         }
 
@@ -165,6 +181,10 @@ public abstract class Node {
     public static class BlockNode extends Node {
         private final List<Node> nodes = new ArrayList<>();
 
+        public BlockNode(LongRange range) {
+            super(range);
+        }
+
         @Override
         public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
             return visitor.visitBlockNode(this, param);
@@ -183,7 +203,8 @@ public abstract class Node {
         private final String name;
         private Node initValueNode;
 
-        public StateDeclNode(String name, Node initValueNode) {
+        public StateDeclNode(LongRange range, String name, Node initValueNode) {
+            super(range);
             this.name = Objects.requireNonNull(name);
             this.initValueNode = Objects.requireNonNull(initValueNode);
         }
@@ -211,7 +232,8 @@ public abstract class Node {
         private Node initValueNode;
         private ClassScope.SymbolEntry entry;
 
-        public VarDeclNode(String name, Node initValueNode) {
+        public VarDeclNode(LongRange range, String name, Node initValueNode) {
+            super(range);
             this.name = name;
             this.initValueNode = initValueNode;
         }
@@ -246,7 +268,8 @@ public abstract class Node {
         private final String varName;
         private ClassScope.SymbolEntry entry;
 
-        public VarNode(String varName) {
+        public VarNode(LongRange range, String varName) {
+            super(range);
             this.varName = varName;
             this.entry = null;
         }
@@ -287,6 +310,7 @@ public abstract class Node {
          * must be type checked.
          */
         public PopNode(Node exprNode) {
+            super(exprNode.range);
             this.exprNode = Objects.requireNonNull(exprNode);
             Objects.requireNonNull(exprNode.getType());
             this.setType(LType.voidType);
@@ -305,6 +329,9 @@ public abstract class Node {
     public static class RootNode extends Node {
         private final List<CaseNode> caseNodes = new ArrayList<>();
 
+        public RootNode(LongRange range) {
+            super(range);
+        }
 
         @Override
         public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {

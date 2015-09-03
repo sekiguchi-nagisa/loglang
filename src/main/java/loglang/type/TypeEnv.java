@@ -2,10 +2,10 @@ package loglang.type;
 
 import java.util.*;
 
-import static loglang.SemanticException.*;
+import static loglang.TypeException.*;
 
-import loglang.SemanticException;
-import loglang.misc.Pair;
+import loglang.TypeException;
+import loglang.misc.Utils;
 import loglang.type.LType.*;
 
 /**
@@ -28,22 +28,25 @@ public class TypeEnv {
         this.typeMap.put(LType.voidType.getUniqueName(), LType.voidType);
         this.typeMap.put(LType.anyType.getUniqueName(), LType.anyType);
 
-        // add basic type
-        this.intType = this.newBasicType("int", int.class);
-        this.floatType = this.newBasicType("float", float.class);
-        this.boolType = this.newBasicType("bool", boolean.class);
-        this.stringType = this.newBasicType("string", String.class);
+        try {
+            // add basic type
+            this.intType = this.newBasicType("int", int.class);
+            this.floatType = this.newBasicType("float", float.class);
+            this.boolType = this.newBasicType("bool", boolean.class);
+            this.stringType = this.newBasicType("string", String.class);
+        } catch(TypeException e) {
+            Utils.fatal(e.getMessage());
+        }
     }
-
 
     /**
      *
      * @param simpleName
      * @param clazz
      * @return
-     * @throws SemanticException
+     * @throws TypeException
      */
-    private LType newBasicType(String simpleName, Class<?> clazz) throws SemanticException{
+    private LType newBasicType(String simpleName, Class<?> clazz) throws TypeException {
         String mangledName = Mangler.mangleBasicType(simpleName);
         LType type = new LType(mangledName, clazz.getCanonicalName(), LType.anyType);
         return this.registerType(mangledName, type);
@@ -54,11 +57,11 @@ public class TypeEnv {
      * @param mangledName
      * @param type
      * @return
-     * @throws SemanticException
+     * @throws TypeException
      */
-    private LType registerType(String mangledName, LType type) throws SemanticException{
+    private LType registerType(String mangledName, LType type) throws TypeException {
         if(Objects.nonNull(this.typeMap.put(mangledName, type))) {
-            semanticError("already defined type: " + type.getSimpleName());
+            typeError("already defined type: " + type.getSimpleName());
         }
         return type;
     }
@@ -78,12 +81,12 @@ public class TypeEnv {
      *
      * @param simpleName
      * @return
-     * @throws SemanticException
+     * @throws TypeException
      */
-    public LType getBasicType(String simpleName) throws SemanticException{
+    public LType getBasicType(String simpleName) throws TypeException {
         LType type = this.getTypeByMangledName(Mangler.mangleBasicType(simpleName));
         if(type == null) {
-            semanticError("undefined type: " + simpleName);
+            typeError("undefined type: " + simpleName);
         }
         return type;
     }
@@ -129,21 +132,19 @@ public class TypeEnv {
         return this.intType.equals(type) || this.floatType.equals(type) || this.stringType.equals(type);
     }
 
-
     /**
      *
      * @param elementType
      * must not be void
      * @return
-     * @throws SemanticException
-     * if broken.
+     * @throws TypeException
      */
-    public ArrayType getArrayType(LType elementType) throws SemanticException {
+    public ArrayType getArrayType(LType elementType) throws TypeException {
         String mangledName;
         try {
             mangledName = Mangler.mangleArrayType(elementType);
         } catch(IllegalArgumentException e) {
-            throw new SemanticException(e.getMessage());
+            throw new TypeException(e.getMessage());
         }
 
         LType type = this.getTypeByMangledName(mangledName);
@@ -158,14 +159,14 @@ public class TypeEnv {
      * @param elementType
      * must not be void
      * @return
-     * @throws SemanticException
+     * @throws TypeException
      */
-    public OptionalType getOptionalType(LType elementType) throws SemanticException {
+    public OptionalType getOptionalType(LType elementType) throws TypeException {
         String mangledName;
         try {
             mangledName = Mangler.mangleOptionalType(elementType);
         } catch(IllegalArgumentException e) {
-            throw new SemanticException(e.getMessage());
+            throw new TypeException(e.getMessage());
         }
         LType type = this.getTypeByMangledName(mangledName);
         if(type == null) {
@@ -174,12 +175,12 @@ public class TypeEnv {
         return (OptionalType)type;
     }
 
-    public TupleType getTupleType(LType[] elementTypes) throws SemanticException {
+    public TupleType getTupleType(LType[] elementTypes) throws TypeException {
         String mangledName;
         try {
             mangledName = Mangler.mangleTupleType(elementTypes);
         } catch(IllegalArgumentException e) {
-            throw new SemanticException(e.getMessage());
+            throw new TypeException(e.getMessage());
         }
         LType type = this.getTypeByMangledName(mangledName);
         if(type == null) {
@@ -188,11 +189,11 @@ public class TypeEnv {
         return (TupleType) type;
     }
 
-    public UnionType getUnionType(LType[] elementTypes) throws SemanticException {
+    public UnionType getUnionType(LType[] elementTypes) throws TypeException {
         try {
             elementTypes = Mangler.flattenUnionElements(elementTypes);
         } catch(IllegalArgumentException e) {
-            throw new SemanticException(e.getMessage());
+            throw new TypeException(e.getMessage());
         }
         String mangledName = Mangler.mangleUnionTypeUnsafe(elementTypes);
         LType type = this.getTypeByMangledName(mangledName);
@@ -207,26 +208,25 @@ public class TypeEnv {
      * @param name
      * must be simple name
      * @return
-     * @throws SemanticException
+     * @throws TypeException
      * if already defined.
      */
-    public StructureType newStructureType(String name) throws SemanticException {
+    public StructureType newStructureType(String name) throws TypeException {
         String mangledName = Mangler.mangleBasicType(Objects.requireNonNull(name));
         return (StructureType) this.registerType(mangledName, new StructureType(mangledName));
     }
-
 
     /**
      *
      * @param type
      * @param fieldName
      * @param fieldType
-     * @throws SemanticException
+     * @throws TypeException
      * if already defined.
      */
-    public void defineField(StructureType type, String fieldName, LType fieldType) throws SemanticException{
+    public void defineField(StructureType type, String fieldName, LType fieldType) throws TypeException {
         if(!type.addField(fieldName, fieldType)) {
-            semanticError("already undefined field: " + fieldName + ", in " + type.getSimpleName());
+            typeError("already undefined field: " + fieldName + ", in " + type.getSimpleName());
         }
     }
 }

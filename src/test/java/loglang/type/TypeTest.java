@@ -1,6 +1,6 @@
 package loglang.type;
 
-import loglang.SemanticException;
+import loglang.TypeException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -95,7 +95,7 @@ public class TypeTest {
     }
 
     @Test
-    public void testTypeEnvAPI() {
+    public void testTypeEnvAPI() throws TypeException {
         // basic type
         LType type = this.env.getBasicType("int");
         assertTrue(type != null);
@@ -104,7 +104,7 @@ public class TypeTest {
             type = this.env.getBasicType("Int");    // not found
             assertTrue(type != null);  // unreachable
         } catch(Exception e) {
-            assertTrue(e instanceof SemanticException);
+            assertTrue(e instanceof TypeException);
             assertEquals("undefined type: Int", e.getMessage());
         }
 
@@ -116,7 +116,7 @@ public class TypeTest {
             type = this.env.getArrayType(this.env.getVoidType());
             assertTrue(type instanceof LType.ArrayType);
         } catch(Exception e) {
-            assertTrue(e instanceof SemanticException);
+            assertTrue(e instanceof TypeException);
         }
 
         // optional type
@@ -127,7 +127,7 @@ public class TypeTest {
             type = this.env.getOptionalType(this.env.getVoidType());
             assertTrue(type instanceof LType.OptionalType);
         } catch(Exception e) {
-            assertTrue(e instanceof SemanticException);
+            assertTrue(e instanceof TypeException);
         }
 
         // tuple type
@@ -138,7 +138,7 @@ public class TypeTest {
             this.env.getTupleType(new LType[]{this.env.getVoidType(), this.env.getIntType()});
             assertTrue(false);
         } catch(Exception e) {
-            assertTrue(e instanceof SemanticException);
+            assertTrue(e instanceof TypeException);
         }
 
         // union type
@@ -149,12 +149,12 @@ public class TypeTest {
             this.env.getUnionType(new LType[]{this.env.getVoidType()});
             assertTrue(false);
         } catch(Exception e) {
-            assertTrue(e instanceof SemanticException);
+            assertTrue(e instanceof TypeException);
         }
     }
 
     @Test
-    public void testDemangling() {
+    public void testDemangling() throws TypeException {
         // basic type
         String simpleName = "int";
         String mangledName = Mangler.mangleBasicType("int");
@@ -202,7 +202,7 @@ public class TypeTest {
     }
 
     @Test
-    public void testTypeAPI() {
+    public void testTypeAPI() throws TypeException {
         // basic type
         assertTrue(this.env.getAnyType().isSameOrBaseOf(this.env.getIntType()));
         assertFalse(this.env.getAnyType().isSameOrBaseOf(this.env.getVoidType()));

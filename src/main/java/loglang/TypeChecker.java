@@ -31,12 +31,12 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
         LType type = targetNode.getType();
         if(type == null) {
-            semanticError("broken node");
+            semanticError(targetNode.getRange(), "broken node");
         }
 
         if(requiredType == null) {
             if(unacceptableType != null && unacceptableType.isSameOrBaseOf(type)) {
-                semanticError("unacceptable type: " + type);
+                semanticError(targetNode.getRange(), "unacceptable type: " + type);
             }
             return targetNode;
         }
@@ -45,7 +45,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
             return targetNode;
         }
 
-        semanticError("require: " + requiredType + ", but is: " + type);
+        semanticError(targetNode.getRange(), "require: " + requiredType + ", but is: " + type);
         return null;
     }
 
@@ -146,7 +146,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         LType type = node.getInitValueNode().getType();
         ClassScope.SymbolEntry entry = this.classScope.newStateEntry(node.getName(), type, false);
         if(entry == null) {
-            semanticError("already defined state variable: " + node.getName());
+            semanticError(node.getRange(), "already defined state variable: " + node.getName());
         }
 
         node.setType(LType.voidType);
@@ -160,7 +160,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         LType type = node.getInitValueNode().getType();
         ClassScope.SymbolEntry entry = this.classScope.newLocalEntry(node.getName(), type, false);
         if(entry == null) {
-            semanticError("already defined local variable: " + node.getName());
+            semanticError(node.getRange(), "already defined local variable: " + node.getName());
         }
 
         node.setEntry(entry);
@@ -172,7 +172,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     public Node visitVarNode(VarNode node, Void param) {
         ClassScope.SymbolEntry entry = this.classScope.findEntry(node.getVarName());
         if(entry == null) {
-            semanticError("undefined variable: " + node.getVarName());
+            semanticError(node.getRange(), "undefined variable: " + node.getVarName());
         }
 
         node.setEntry(entry);

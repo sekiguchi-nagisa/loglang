@@ -3,6 +3,7 @@ package loglang.peg;
 import loglang.TreeTranslator;
 
 import static loglang.peg.ParsingExpression.*;
+import static nez.ast.ASTHelper.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/28.
@@ -11,9 +12,9 @@ public class Tree2ExprTranslator extends TreeTranslator<ParsingExpression> {{
     this.add("RuleExpr", (t) -> {
         String typeName = t.get(1).getText();
         if(typeName.equals("")) {   // untyped
-            return new RuleExpr(t.get(0).getText(), this.translate(t.get(2)));
+            return new RuleExpr(range(t), t.get(0).getText(), this.translate(t.get(2)));
         } else {
-            return new TypedRuleExpr(t.get(0).getText(), typeName, this.translate(t.get(2)));
+            return new TypedRuleExpr(range(t), t.get(0).getText(), typeName, this.translate(t.get(2)));
         }
     });
 
@@ -31,25 +32,25 @@ public class Tree2ExprTranslator extends TreeTranslator<ParsingExpression> {{
 
     this.add("LabeledExpr", (t) ->
             new LabeledExpr(
-                    t.get(0).getText(), this.translate(t.get(1))
+                    range(t), t.get(0).getText(), this.translate(t.get(1))
             )
     );
 
-    this.add("AndExpr", (t) -> PredicateExpr.andPredicate(this.translate(t.get(0))));
+    this.add("AndExpr", (t) -> PredicateExpr.andPredicate(range(t), this.translate(t.get(0))));
 
-    this.add("NotExpr", (t) -> PredicateExpr.notPredicate(this.translate(t.get(0))));
+    this.add("NotExpr", (t) -> PredicateExpr.notPredicate(range(t), this.translate(t.get(0))));
 
-    this.add("ZeroMoreExpr", (t) -> RepeatExpr.zeroMore(this.translate(t.get(0))));
+    this.add("ZeroMoreExpr", (t) -> RepeatExpr.zeroMore(range(t), this.translate(t.get(0))));
 
-    this.add("OneMoreExpr", (t) -> RepeatExpr.oneMore(this.translate(t.get(0))));
+    this.add("OneMoreExpr", (t) -> RepeatExpr.oneMore(range(t), this.translate(t.get(0))));
 
-    this.add("OptionalExpr", (t) -> new OptionalExpr(this.translate(t.get(0))));
+    this.add("OptionalExpr", (t) -> new OptionalExpr(range(t), this.translate(t.get(0))));
 
-    this.add("NonTerminalExpr", (t) -> new NonTerminalExpr(t.getText()));
+    this.add("NonTerminalExpr", (t) -> new NonTerminalExpr(range(t), t.getText()));
 
-    this.add("AnyExpr", (t) -> new AnyExpr());
+    this.add("AnyExpr", (t) -> new AnyExpr(range(t)));
 
-    this.add("StringExpr", (t) -> new StringExpr(t.getText()));
+    this.add("StringExpr", (t) -> new StringExpr(range(t), t.getText()));
 
-    this.add("CharClassExpr", (t) -> new CharClassExpr(t.getText()));
+    this.add("CharClassExpr", (t) -> new CharClassExpr(range(t), t.getText()));
 }}
