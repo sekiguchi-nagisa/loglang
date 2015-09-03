@@ -37,6 +37,16 @@ public class Pair<L, R> {
         return obj instanceof Pair &&
                 this.left != null && this.left.equals(((Pair) obj).left) &&
                 this.right != null && this.right.equals(((Pair) obj).right);
+    }
 
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("(")
+                .append(this.left)
+                .append(", ")
+                .append(this.right)
+                .append(")")
+                .toString();
     }
 }

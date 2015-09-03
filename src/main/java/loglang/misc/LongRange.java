@@ -11,4 +11,22 @@ public class LongRange {
         this.pos = pos;
         this.len = len;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof LongRange
+                && this.pos == ((LongRange) obj).pos
+                && this.len == ((LongRange) obj).len;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("(pos=")
+                .append(this.pos)
+                .append(", len=")
+                .append(this.len)
+                .append(")")
+                .toString();
+    }
 }

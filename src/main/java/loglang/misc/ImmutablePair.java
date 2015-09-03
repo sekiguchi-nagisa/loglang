@@ -21,6 +21,16 @@ public class ImmutablePair<L, R> {
         return obj instanceof ImmutablePair &&
                 this.left != null && this.left.equals(((ImmutablePair) obj).left) &&
                 this.right != null && this.right.equals(((ImmutablePair) obj).right);
+    }
 
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("(")
+                .append(this.left)
+                .append(", ")
+                .append(this.right)
+                .append(")")
+                .toString();
     }
 }
