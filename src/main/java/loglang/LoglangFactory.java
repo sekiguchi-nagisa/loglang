@@ -4,10 +4,7 @@ import loglang.jvm.ByteCodeGenerator;
 import loglang.jvm.ByteCodeLoader;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
-import loglang.peg.ExprTypeChecker;
-import loglang.peg.ParsingExpression;
-import loglang.peg.PrettyPrinter;
-import loglang.peg.Tree2ExprTranslator;
+import loglang.peg.*;
 import loglang.type.TypeEnv;
 import nez.NezOption;
 import nez.SourceContext;
@@ -19,6 +16,7 @@ import nez.lang.GrammarFile;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -118,7 +116,7 @@ public class LoglangFactory {
         }
 
         if(Config.dumpPEG) {
-            System.err.println("++++ dump untyped PEG ++++");
+            System.err.println("++++ dump PEG ++++");
             PrettyPrinter printer = new PrettyPrinter();
             for(ParsingExpression.RuleExpr e : ruleExprs) {
                 printer.printRule(System.err, e);
@@ -130,7 +128,7 @@ public class LoglangFactory {
             System.exit(1);
         }
 
-        if(Config.dumpPEG) {
+        if(Config.dumpTypedPEG) {
             System.err.println("++++ dump typed PEG ++++");
             PrettyPrinter printer = new PrettyPrinter();
             for(ParsingExpression.RuleExpr e : ruleExprs) {
@@ -138,46 +136,29 @@ public class LoglangFactory {
             }
         }
 
+        try {
+            Path path = Files.createTempFile("ll_pattern", ".nez");
+            try(PrintStream stream = new PrintStream(path.toFile())) {
+                new NezGrammarGenerator(stream).generate(ruleExprs);
+            } catch(Exception e) {
+                Utils.propagate(e);
+            }
 
-//        try {
-//            Path path = Files.createTempFile("ll_pattern", ".nez");
-//            try(BufferedWriter bw = Files.newBufferedWriter(path, Charset.forName("UTF8"))) {
-//                bw.write(patternTree.getText());
-//                bw.write(System.lineSeparator());
-//                bw.write("File = { ");
-//
-//                int size = casePatterns.size();
-//                for(int i = 0; i< size; i++) {
-//                    if(i > 0) {
-//                        bw.write(" / ");
-//                    }
-//                    bw.write("@{ @");
-//                    bw.write(casePatterns.get(i));
-//                    bw.write(" #");
-//                    bw.write(Integer.toString(i));
-//                    bw.write(" }");
-//                }
-//
-//                bw.write(" #ResultAST }");
-//                bw.write(System.lineSeparator());
-//                bw.flush();
-//                bw.close();
-//            }
-//            String pathName = path.toString();
-//
-//            // delete pattern file before shutdown
-//            if(Config.dumpPattern) {
-//                System.err.println("@@@@ Dump Pattern File: " + pathName + " @@@@");
-//            } else {
-//                Runtime.getRuntime().addShutdownHook(
-//                        new Thread(() -> new File(pathName).delete())
-//                );
-//            }
-//
+            String pathName = path.toString();
+
+            // delete pattern file before shutdown
+            if(Config.dumpPattern) {
+                System.err.println("@@@@ Dump Pattern File: " + pathName + " @@@@");
+            } else {
+                Runtime.getRuntime().addShutdownHook(
+                        new Thread(() -> new File(pathName).delete())
+                );
+            }
+
 //            return GrammarFile.loadGrammarFile(pathName, NezOption.newDefaultOption()).newGrammar("File");
-//        } catch(IOException e) {
-//            Utils.propagate(e);
-//        }
+        } catch(IOException e) {
+            Utils.propagate(e);
+        }
         return null;
     }
 

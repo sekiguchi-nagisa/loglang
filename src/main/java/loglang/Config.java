@@ -12,4 +12,5 @@ public final class Config {
     public final static boolean dumpByteCode = Utils.checkProperty("dumpByteCode", false);
     public final static boolean pegOnly = Utils.checkProperty("pegOnly", false);
     public final static boolean dumpPEG = Utils.checkProperty("dumpPEG", false);
+    public final static boolean dumpTypedPEG = Utils.checkProperty("dumpTypedPEG", false);
 }

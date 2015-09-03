@@ -128,6 +128,10 @@ public class LType implements Comparable<LType> {
                 || (type.superType != null && this.isSameOrBaseOf(type.superType));
     }
 
+    public final boolean isVoid() {
+        return this.stackConsumption == 0;
+    }
+
     /**
      *
      * @param fieldName

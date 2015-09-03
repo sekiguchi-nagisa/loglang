@@ -28,7 +28,7 @@ public class Mangler {
         }
 
         for(LType t : types) {
-            if(t.equals(LType.voidType)) {
+            if(t.isVoid()) {
                 throw new IllegalArgumentException("element type must not be void type");
             }
         }
@@ -67,7 +67,7 @@ public class Mangler {
             LType type = queue.removeFirst();
             if(type instanceof LType.UnionType) {
                 queue.addAll(((LType.UnionType) type).getElementTypes());
-            } else if(type.equals(LType.voidType)) {
+            } else if(type.isVoid()) {
                 throw new IllegalArgumentException("element type must not be void type");
             } else {
                 typeSet.add(type);

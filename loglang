@@ -16,4 +16,9 @@ if [ "${LL_DUMP_PEG}" != "" ]; then
     JVM_OPTION="${JVM_OPTION} -DdumpPEG=on"
 fi
 
+if [ "${LL_DUMP_TYPED_PEG}" != "" ]; then
+    JVM_OPTION="${JVM_OPTION} -DdumpTypedPEG=on"
+fi
+
+
 java $JVM_OPTION -jar ./target/loglang-1.0-SNAPSHOT-jar-with-dependencies.jar $@

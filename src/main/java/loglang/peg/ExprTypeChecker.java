@@ -89,16 +89,13 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     @Override
     public LType visitRepeatExpr(RepeatExpr expr, Void param) {
         LType exprType = this.checkType(expr.getExpr());
-        return expr.setType(
-                exprType.equals(this.env.getVoidType()) ? this.env.getVoidType() : this.env.getArrayType(exprType)
-        );
+        return expr.setType(exprType.isVoid() ? this.env.getVoidType() : this.env.getArrayType(exprType));
     }
 
     @Override
     public LType visitOptionalExpr(OptionalExpr expr, Void param) {
         LType exprType = this.checkType(expr.getExpr());
-        return expr.setType(
-                exprType.equals(this.env.getVoidType()) ? this.env.getVoidType() : this.env.getOptionalType(exprType)
+        return expr.setType(exprType.isVoid() ? this.env.getVoidType() : this.env.getOptionalType(exprType)
         );
     }
 
@@ -113,13 +110,18 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         List<LType> types = new ArrayList<>();
         for(ParsingExpression e : expr.getExprs()) {
             LType type = this.checkType(e);
-            if(!type.equals(this.env.getVoidType())) {
+            if(!type.isVoid()) {
                 types.add(type);
             }
         }
-        return expr.setType(
-                types.isEmpty() ? this.env.getVoidType() : this.env.getTupleType(types.toArray(new LType[0]))
-        );
+
+        if(types.isEmpty()) {
+            return expr.setType(this.env.getVoidType());
+        } else if(types.size() == 1) {
+            return expr.setType(types.get(0));
+        } else {
+            return expr.setType(this.env.getTupleType(types.toArray(new LType[0])));
+        }
     }
 
     @Override
@@ -127,16 +129,31 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         List<LType> types = new ArrayList<>();
         for(ParsingExpression e : expr.getExprs()) {
             LType type = this.checkType(e);
-            if(!type.equals(this.env.getVoidType())) {
+            if(!type.isVoid()) {
                 types.add(type);
             }
         }
         if(!types.isEmpty() && types.size() < expr.getExprs().size()) {
             semanticError("not allow void type");
         }
-        return expr.setType(
-                types.isEmpty() ? this.env.getVoidType() : this.env.getUnionType(types.toArray(new LType[0]))
-        );
+
+        if(types.isEmpty()) {
+            return expr.setType(this.env.getVoidType());
+        }
+
+        boolean sameAll = true;
+        final int size = types.size();
+        for(int i = 1; i < size; i++) {
+            if(!types.get(0).equals(types.get(i))) {
+                sameAll = false;
+                break;
+            }
+        }
+        if(sameAll) {
+            return expr.setType(types.get(0));
+        } else {
+            return expr.setType(this.env.getUnionType(types.toArray(new LType[0])));
+        }
     }
 
     @Override
