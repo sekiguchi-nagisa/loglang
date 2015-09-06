@@ -1,47 +1,23 @@
-// comment
-
 [[
 
-Month : enum
-    = 'Jan' / 'Feb' / 'Mar' / 'Apr' / 'May' / 'Jun'
-    / 'Jul' / 'Aug' / 'Sep' / 'Oct' / 'Nov' / 'Dec'
-
-Day : int
-    = [0-3][0-9]
-
-Num : int
-    = [0-9][0-9]
-
-Time
-    = hour : Num ':' minute : Num ':' second : Num
-
-Host : string
-    = (!' ' . )+
-
-Process : string
-    = (!' ' . )+
-
-Pid : int
-    = [0-9]+
-
-
-Data
-    = (!('\n' (MONTH / !. )) . )*
-
-
+_ = [ \t]*
+Hour : int = [0-2][1-9]
+Minute  : int = [0-5][0-9]
+Second : int = [0-5][0-9]
+STR : string = [_a-zA-Z][_a-zA-Z0-9]*
+NUM : int = '0' / [1-9][0-9]*
+Misc1 : pair = $key : STR _ '=' _ $value : NUM
+Misc2 = STR
 ]]
 
+%
+ _  $h : Hour ':' $m : Minute ':' $s : Second _
+%
 
-m : Month ' ' d : Day ' ' t : Time ' ' h : Host ' ' p : Process '[' pid : Pid ']' ':'
-(json : Json {
+$a : Misc1 {
 
 }
- / xml : Xml {
-    if(month == Jan) { }
+
+$b : Misc2 {
+
 }
-)
-
-
-
-
-// json

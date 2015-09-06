@@ -18,7 +18,7 @@ public class PrettyPrinter {
     private int indentLevel = 0;
     private PrintStream stream = System.err;
 
-    public void printRule(PrintStream stream, RuleExpr expr) {
+    public void printPEG(PrintStream stream, ParsingExpression expr) {
         this.stream = stream != null ? stream : System.err;
         this.stream.flush();
         this.print(expr);

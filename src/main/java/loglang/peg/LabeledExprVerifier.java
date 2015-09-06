@@ -72,6 +72,11 @@ public class LabeledExprVerifier extends BaseVisitor<Void, Void> {
                 && this.exprStack.get(1) instanceof ParsingExpression.SequenceExpr) {
             return this.visit(expr.getExpr());
         }
+        if(this.exprStack.size() == 2
+                && (this.exprStack.get(0) instanceof ParsingExpression.PrefixExpr
+                || this.exprStack.get(0) instanceof ParsingExpression.CaseExpr)) {
+            return this.visit(expr.getExpr());
+        }
         this.exprStack.clear();
         throw new SemanticException(expr.getRange(), "not allowed label");
     }

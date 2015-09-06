@@ -50,7 +50,7 @@ public class Loglang {
                 System.exit(1);
             }
 
-            CommonTree tree = result.get(0);
+            CommonTree tree = result.get(1);
             String tagName = tree.getTag().getName();
             int id = Integer.parseInt(tagName);
 

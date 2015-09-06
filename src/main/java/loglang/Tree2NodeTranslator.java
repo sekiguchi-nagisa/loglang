@@ -18,7 +18,7 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
     });
 
 
-    this.add("CaseStatement", (t) -> this.translate(t.get(1)));
+    this.add("CaseStatement", (t) -> this.translate(t.get(1))); // ignore case pattern
 
     this.add("CaseBlock", (t) -> {
         assert t.size() == 2;

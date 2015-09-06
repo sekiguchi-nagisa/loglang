@@ -3,10 +3,7 @@ package loglang.peg;
 import loglang.misc.LongRange;
 import loglang.type.LType;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/28.
@@ -357,6 +354,78 @@ public abstract class ParsingExpression {
         @Override
         public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
             return visitor.visitTypedRuleExpr(this, param);
+        }
+    }
+
+    /**
+     * pseudo expression for predix pattern
+     */
+    public static class PrefixExpr extends ParsingExpression {
+        private final List<ParsingExpression> exprs;
+
+        public PrefixExpr(Optional<ParsingExpression> expr) {
+            super(expr.isPresent() ? expr.get().getRange() : new LongRange(0, 0));
+            ArrayList<ParsingExpression> list = new ArrayList<>();
+            expr.ifPresent((t) -> {
+                if(t instanceof SequenceExpr) {
+                    for(ParsingExpression e : ((SequenceExpr) t).getExprs()) {
+                        list.add(e);
+                    }
+                } else {
+                    list.add(t);
+                }
+            });
+
+            this.exprs = Collections.unmodifiableList(list);
+        }
+
+        /**
+         *
+         * @return
+         * read only
+         */
+        public List<ParsingExpression> getExprs() {
+            return exprs;
+        }
+
+        @Override
+        public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
+            return visitor.visitPrefixExpr(this, param);
+        }
+    }
+
+    /**
+     * pseudo expression for representing case pattern
+     */
+    public static class CaseExpr extends ParsingExpression {
+        private final List<ParsingExpression> exprs;
+
+        public CaseExpr(ParsingExpression expr) {
+            super(expr.getRange());
+            ArrayList<ParsingExpression> list = new ArrayList<>();
+            if(expr instanceof SequenceExpr) {
+                for(ParsingExpression e : ((SequenceExpr) expr).getExprs()) {
+                    list.add(e);
+                }
+            } else {
+                list.add(expr);
+            }
+
+            this.exprs = Collections.unmodifiableList(list);
+        }
+
+        /**
+         *
+         * @return
+         * read only
+         */
+        public List<ParsingExpression> getExprs() {
+            return exprs;
+        }
+
+        @Override
+        public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
+            return visitor.visitCaseExpr(this, param);
         }
     }
 }

@@ -16,6 +16,7 @@ import static loglang.SemanticException.*;
 public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     private final TypeEnv env;
     private final Map<String, RuleExpr> ruleMap = new HashMap<>();
+    private final LabeledExprVerifier labeledExprVerifier = new LabeledExprVerifier();
     private final LabeledExprDetector labeledExprDetector = new LabeledExprDetector();
     private final Set<ParsingExpression> visitedExprSet = new HashSet<>();
 
@@ -32,10 +33,9 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         }
 
         // verify and check type
-        LabeledExprVerifier labeledExprVerifier = new LabeledExprVerifier();
         for(RuleExpr ruleExpr : rules) {
             this.visitedExprSet.clear();
-            labeledExprVerifier.visit(ruleExpr);
+            this. labeledExprVerifier.visit(ruleExpr);
             this.checkType(ruleExpr);
         }
     }
@@ -221,5 +221,29 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         } catch(TypeException e) {
             throw new SemanticException(expr.getRange(), e);
         }
+    }
+
+    @Override
+    public LType visitPrefixExpr(PrefixExpr expr, Void param) {
+        this.labeledExprVerifier.visit(expr);
+        if(!this.labeledExprDetector.visit(expr)) {
+            semanticError(expr.getRange(), "require label");
+        }
+        for(ParsingExpression e : expr.getExprs()) {
+            this.checkType(this.env.getVoidType(), e);
+        }
+        return expr.setType(this.env.getVoidType());
+    }
+
+    @Override
+    public LType visitCaseExpr(CaseExpr expr, Void param) {
+        this.labeledExprVerifier.visit(expr);
+        if(!this.labeledExprDetector.visit(expr)) {
+            semanticError(expr.getRange(), "require label");
+        }
+        for(ParsingExpression e : expr.getExprs()) {
+            this.checkType(this.env.getVoidType(), e);
+        }
+        return expr.setType(this.env.getVoidType());
     }
 }

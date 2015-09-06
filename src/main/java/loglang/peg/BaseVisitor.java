@@ -66,4 +66,14 @@ public abstract class BaseVisitor<R, P> implements ExpressionVisitor<R, P> {
     public R visitTypedRuleExpr(ParsingExpression.TypedRuleExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
+
+    @Override
+    public R visitPrefixExpr(ParsingExpression.PrefixExpr expr, P param) {
+        return this.visitDefault(expr, param);
+    }
+
+    @Override
+    public R visitCaseExpr(ParsingExpression.CaseExpr expr, P param) {
+        return this.visitDefault(expr, param);
+    }
 }

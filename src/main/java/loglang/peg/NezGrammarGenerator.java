@@ -5,6 +5,7 @@ import loglang.type.LType;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static loglang.peg.ParsingExpression.*;
 
@@ -21,10 +22,26 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         this.stream = Objects.requireNonNull(stream);
     }
 
-    public void generate(List<RuleExpr> ruleExprs) {
-        for(RuleExpr ruleExpr : ruleExprs) {
-            this.visit(ruleExpr);
+    public void generate(List<RuleExpr> ruleExprs,
+                         PrefixExpr prefixExpr,
+                         List<CaseExpr> caseExprs) {
+        this.stream.print("File = { ");
+        this.visit(prefixExpr);
+
+        this.stream.print("@{ ( ");
+        int count = 0;
+        for(CaseExpr caseExpr : caseExprs) {
+            if(count > 0) {
+                this.stream.print(" / ");
+            }
+            this.visit(caseExpr);
+            this.stream.print(" #" + count++);
         }
+        this.stream.print(") }");
+
+        this.stream.println(" #ResultAST }");
+
+        ruleExprs.stream().forEach(this::visit);
     }
 
     private void printTypeId(LType type) {
@@ -191,6 +208,31 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         this.stream.print(" ");
         this.printTypeId(expr.getType());
         this.stream.println(" }");
+        return null;
+    }
+
+    @Override
+    public Void visitPrefixExpr(PrefixExpr expr, Void param) {
+        this.stream.print("@{ ");
+        for(ParsingExpression e : expr.getExprs()) {
+            this.visit(e);
+            this.stream.print(" ");
+        }
+        this.stream.print("#Prefix } ");
+        return null;
+    }
+
+    @Override
+    public Void visitCaseExpr(CaseExpr expr, Void param) {
+        this.stream.print("( ");
+        int count = 0;
+        for(ParsingExpression e : expr.getExprs()) {
+            if(count++ > 0) {
+                this.stream.print(" ");
+            }
+            this.visit(e);
+        }
+        this.stream.print(" )");
         return null;
     }
 }

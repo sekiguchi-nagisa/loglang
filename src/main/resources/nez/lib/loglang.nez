@@ -11,7 +11,6 @@ IDENTIFIER = [a-zA-Z_][0-9a-zA-Z_]*
 PATTERN = 'pattern' !W
 STATE   = 'state'   !W
 VAR     = 'var'     !W
-CASE    = 'case'    !W
 TRUE    = 'true'    !W
 FALSE   = 'false'   !W
 
@@ -19,7 +18,6 @@ FALSE   = 'false'   !W
 KEYWORD = PATTERN
         / STATE
         / VAR
-        / CASE
         / TRUE
         / FALSE
 
@@ -33,7 +31,7 @@ LINE_END
     = WS (EOF / [\r\n] / ';')
 
 File
-    = { _ @PatternDefinition _ @MatchStatement _ #Root }
+    = { _ @PatternDefinition _ @PrefixDefinition  _ @MatchStatement _ #Root }
 
 PATTERN_BEGIN
     = '[[' WS '\n'
@@ -46,11 +44,14 @@ PatternDefinition
     = PATTERN_BEGIN {  (_ @RuleExpr)+ _ #PatternDefinition } PATTERN_END
 
 RuleExpr
-    = { @{ IDENTIFIER #Name } @TypeAnnotation _ '=' _ @ChoiceExpr #RuleExpr }
+    = { @{ IDENTIFIER #Name } @TypeAnnotation _ '=' _ @ParsingExpression #RuleExpr }
 
 TypeAnnotation
     = _ ':' _ { IDENTIFIER #Name }
     / {#Empty}
+
+ParsingExpression
+    = ChoiceExpr
 
 ChoiceExpr
     = SequenceExpr {@ _ '/' _ @SequenceExpr #ChoiceExpr }*
@@ -70,7 +71,7 @@ SuffixExpr
     = PrimaryExpr {@ _ ('*' #ZeroMoreExpr / '+' #OneMoreExpr / '?' #OptionalExpr) }*
 
 PrimaryExpr
-    = '(' _ ChoiceExpr _ ')'
+    = '(' _ ParsingExpression _ ')'
     / { IDENTIFIER !(_ [:=<]) #NonTerminalExpr }
     / { '.' #AnyExpr }
     / { '\''  ('\\\'' / '\\\\' / !['\n\r] .)*  '\'' #StringExpr }
@@ -97,12 +98,14 @@ HEX
 
 
 // language definition
+PrefixDefinition
+    = { ( '%' _  @ParsingExpression _ '%' )? #PrefixDefinition }
 
 MatchStatement
     = { ( _ @CaseStatement)+ #Match }
 
 CaseStatement
-    = { CASE _ @{ IDENTIFIER #CasePattern } @CaseBlock #CaseStatement }
+    = { @ParsingExpression @CaseBlock #CaseStatement }
 
 CaseBlock
     = _ { '{' _ @StateDefinitions _ @Statements _ '}' #CaseBlock } _
