@@ -26,24 +26,4 @@ public class LabeledExprDetector extends BaseVisitor<Boolean, Void> {
     public Boolean visitLabeledExpr(LabeledExpr expr, Void param) {
         return true;
     }
-
-    @Override
-    public Boolean visitPrefixExpr(PrefixExpr expr, Void param) {
-        for(ParsingExpression e : expr.getExprs()) {
-            if(this.visit(e)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public Boolean visitCaseExpr(CaseExpr expr, Void param) {
-        for(ParsingExpression e : expr.getExprs()) {
-            if(this.visit(e)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

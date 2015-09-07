@@ -229,4 +229,16 @@ public class TypeEnv {
             typeError("already undefined field: " + fieldName + ", in " + type.getSimpleName());
         }
     }
+
+    /**
+     * create type name of anonymous type representing prefix pattern.
+     * @return
+     */
+    public static String getAnonymousPrefixTypeName() {
+        return "__Anonymous_prefix_type__";
+    }
+
+    public static String createAnonymousCaseTypeName(int caseIndex) {
+        return "__Anonymous_case_type_" + caseIndex + "__";
+    }
 }

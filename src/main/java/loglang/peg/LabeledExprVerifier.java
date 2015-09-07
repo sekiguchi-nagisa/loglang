@@ -73,8 +73,7 @@ public class LabeledExprVerifier extends BaseVisitor<Void, Void> {
             return this.visit(expr.getExpr());
         }
         if(this.exprStack.size() == 2
-                && (this.exprStack.get(0) instanceof ParsingExpression.PrefixExpr
-                || this.exprStack.get(0) instanceof ParsingExpression.CaseExpr)) {
+                && this.exprStack.get(0) instanceof ParsingExpression.RuleExpr) {
             return this.visit(expr.getExpr());
         }
         this.exprStack.clear();

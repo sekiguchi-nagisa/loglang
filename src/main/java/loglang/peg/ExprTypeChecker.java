@@ -2,6 +2,7 @@ package loglang.peg;
 
 import loglang.SemanticException;
 import loglang.TypeException;
+import loglang.misc.TypeMatch;
 import loglang.type.LType;
 import loglang.type.TypeEnv;
 
@@ -178,7 +179,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     @Override
     public LType visitLabeledExpr(LabeledExpr expr, Void param) {
         this.checkType(this.env.getAnyType(), expr.getExpr());
-        return expr.setType(this.env.getVoidType());    // actual type is expr.getExpr().getType()
+        return expr.setType(this.env.getVoidType());    // actual type is expr.getExprType()
     }
 
     @Override
@@ -208,10 +209,19 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
                 this.checkType(this.env.getVoidType(), expr.getExpr());
 
                 // define field
-                for(ParsingExpression e : ((SequenceExpr) expr.getExpr()).getExprs()) {
-                    if(e instanceof LabeledExpr) {
-                        this.env.defineField(type, ((LabeledExpr) e).getLabelName(), e.getType());
+                ParsingExpression rightHandSideExpr = expr.getExpr();
+                if(rightHandSideExpr instanceof SequenceExpr) {
+                    for(ParsingExpression e : ((SequenceExpr) rightHandSideExpr).getExprs()) {
+                        if(e instanceof LabeledExpr) {
+                            LabeledExpr l = (LabeledExpr) e;
+                            this.env.defineField(type, l.getLabelName(), l.getExprType());
+                        }
                     }
+                } else if(rightHandSideExpr instanceof LabeledExpr) {
+                    LabeledExpr l = (LabeledExpr) rightHandSideExpr;
+                    this.env.defineField(type, l.getLabelName(), l.getExprType());
+                } else {
+                    semanticError(expr.getRange(), "broken right hand side expression");
                 }
                 return type;
             } else {
@@ -221,29 +231,5 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         } catch(TypeException e) {
             throw new SemanticException(expr.getRange(), e);
         }
-    }
-
-    @Override
-    public LType visitPrefixExpr(PrefixExpr expr, Void param) {
-        this.labeledExprVerifier.visit(expr);
-        if(!this.labeledExprDetector.visit(expr)) {
-            semanticError(expr.getRange(), "require label");
-        }
-        for(ParsingExpression e : expr.getExprs()) {
-            this.checkType(this.env.getVoidType(), e);
-        }
-        return expr.setType(this.env.getVoidType());
-    }
-
-    @Override
-    public LType visitCaseExpr(CaseExpr expr, Void param) {
-        this.labeledExprVerifier.visit(expr);
-        if(!this.labeledExprDetector.visit(expr)) {
-            semanticError(expr.getRange(), "require label");
-        }
-        for(ParsingExpression e : expr.getExprs()) {
-            this.checkType(this.env.getVoidType(), e);
-        }
-        return expr.setType(this.env.getVoidType());
     }
 }

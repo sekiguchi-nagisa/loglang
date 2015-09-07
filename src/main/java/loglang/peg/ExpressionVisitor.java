@@ -26,6 +26,4 @@ public interface ExpressionVisitor<T, P> {
     T visitLabeledExpr(LabeledExpr expr, P param);
     T visitRuleExpr(RuleExpr expr, P param);
     T visitTypedRuleExpr(TypedRuleExpr expr, P param);
-    T visitPrefixExpr(PrefixExpr expr, P param);
-    T visitCaseExpr(CaseExpr expr, P param);
 }

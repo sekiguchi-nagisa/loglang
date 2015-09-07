@@ -20,8 +20,8 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/13.
@@ -48,7 +48,7 @@ public class LoglangFactory {
         Node.RootNode rootNode = (Node.RootNode) new Tree2NodeTranslator().translate(matcherTree);
         try {
             new TypeChecker(env).visit(rootNode);
-        } catch(SemanticException e) {
+        } catch(Exception e) {
             reportErrorAndExit(matcherTree.getSource(), e);
         }
         ByteCodeGenerator gen = new ByteCodeGenerator();
@@ -114,31 +114,42 @@ public class LoglangFactory {
         return ruleExprs;
     }
 
-    private ParsingExpression.PrefixExpr createPrefixExpr(CommonTree prefixTree) {
-        return new ParsingExpression.PrefixExpr(
-                Optional.ofNullable(prefixTree.isEmpty() ?
-                        null : new Tree2ExprTranslator().translate(prefixTree.get(0))));
+    /**
+     *
+     * @param prefixTree
+     * @return
+     * empty or singleton list
+     */
+    private List<ParsingExpression.RuleExpr> createPrefixExpr(CommonTree prefixTree) {
+        if(prefixTree.isEmpty()) {
+            return Collections.emptyList();
+        }
+        ParsingExpression expr = new Tree2ExprTranslator().translate(prefixTree.get(0));
+        String name = TypeEnv.getAnonymousPrefixTypeName();
+        return Collections.singletonList(new ParsingExpression.TypedRuleExpr(expr.getRange(), name, name, expr));
     }
 
-    private List<ParsingExpression.CaseExpr> createCaseExprs(List<CommonTree> caseTrees) {
+    private List<ParsingExpression.RuleExpr> createCaseExprs(List<CommonTree> caseTrees) {
         Tree2ExprTranslator translator = new Tree2ExprTranslator();
-        List<ParsingExpression.CaseExpr> casePatterns = new ArrayList<>();
-        for(CommonTree t : caseTrees) {
-            casePatterns.add(new ParsingExpression.CaseExpr(translator.translate(t)));
+        List<ParsingExpression.RuleExpr> casePatterns = new ArrayList<>();
+        for(int i = 0; i < caseTrees.size(); i++) {
+            String name = TypeEnv.createAnonymousCaseTypeName(i);
+            ParsingExpression expr = translator.translate(caseTrees.get(i));
+            casePatterns.add(new ParsingExpression.TypedRuleExpr(expr.getRange(), name, name, expr));
         }
         return casePatterns;
     }
 
     private void dumpPattern(List<ParsingExpression.RuleExpr> ruleExprs,
-                             ParsingExpression.PrefixExpr prefixExpr,
-                             List<ParsingExpression.CaseExpr> caseExprs) {
+                             List<ParsingExpression.RuleExpr> prefixExpr,
+                             List<ParsingExpression.RuleExpr> caseExprs) {
         PrettyPrinter printer = new PrettyPrinter();
 
         System.err.println("@@ dump Rule @@");
         ruleExprs.stream().forEach((t) -> printer.printPEG(System.err, t));
 
         System.err.println("@@ dump Prefix Pattern @@");
-        printer.printPEG(System.err, prefixExpr);
+        prefixExpr.stream().forEach((t) -> printer.printPEG(System.err, t));
 
         System.err.println("@@ dump Case Pattern @@");
         caseExprs.stream().forEach((t) -> printer.printPEG(System.err, t));
@@ -157,8 +168,8 @@ public class LoglangFactory {
     private Grammar newPatternGrammar(TypeEnv env, CommonTree patternTree,
                                       CommonTree prefixTree, List<CommonTree> caseTrees) {
         List<ParsingExpression.RuleExpr> ruleExprs = this.createRuleExprs(patternTree);
-        ParsingExpression.PrefixExpr prefixExpr = this.createPrefixExpr(prefixTree);
-        List<ParsingExpression.CaseExpr> caseExprs = this.createCaseExprs(caseTrees);
+        List<ParsingExpression.RuleExpr> prefixExpr = this.createPrefixExpr(prefixTree);
+        List<ParsingExpression.RuleExpr> caseExprs = this.createCaseExprs(caseTrees);
 
         if(Config.dumpPEG) {
             System.err.println("++++ dump PEG ++++");
@@ -171,15 +182,9 @@ public class LoglangFactory {
 
             checker.checkType(ruleExprs);
             checker.checkType(prefixExpr);
-            caseExprs.stream().forEach(checker::checkType);
-        } catch(SemanticException e) {
-            reportErrorAndExit(patternTree.getSource(), e);
+            checker.checkType(caseExprs);
         } catch(Exception e) {
-            if(e.getCause() instanceof SemanticException) {
-                reportErrorAndExit(patternTree.getSource(), (SemanticException)e.getCause());
-            } else {
-                Utils.propagate(e);
-            }
+            reportErrorAndExit(patternTree.getSource(), e);
         }
 
         if(Config.dumpTypedPEG) {
@@ -219,8 +224,21 @@ public class LoglangFactory {
         return child;
     }
 
-    private static void reportErrorAndExit(Source source, SemanticException e) {
-        System.err.println(source.formatPositionLine("semantic error", e.getRange().pos, e.getMessage()));
-        System.exit(1);
+    private static void reportErrorAndExit(Source source, Exception e) {
+        Throwable cause = e;
+        while(!(cause instanceof SemanticException)) {
+            if(cause.getCause() == null) {
+                break;
+            }
+            cause = cause.getCause();
+        }
+
+        if(cause instanceof SemanticException) {
+            System.err.println(source.formatPositionLine(
+                    "semantic error", ((SemanticException) cause).getRange().pos, e.getMessage()));
+            System.exit(1);
+        } else {
+            Utils.propagate(e);
+        }
     }
 }

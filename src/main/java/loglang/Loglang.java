@@ -55,7 +55,7 @@ public class Loglang {
             int id = Integer.parseInt(tagName);
 
             System.out.println("matched: " + tagName);
-            this.cases[id].invoke(tree);
+            this.cases[id].invoke(tree.get(0));
             System.out.println();
         }
     }

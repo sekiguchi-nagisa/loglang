@@ -21,26 +21,46 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         this.stream = Objects.requireNonNull(stream);
     }
 
-    public void generate(List<RuleExpr> ruleExprs,
-                         PrefixExpr prefixExpr,
-                         List<CaseExpr> caseExprs) {
+    /**
+     *
+     * @param ruleExprs
+     * @param prefixExpr
+     * must be empty or singleton list
+     * @param caseExprs
+     */
+    public void generate(List<RuleExpr> ruleExprs, List<RuleExpr> prefixExpr, List<RuleExpr> caseExprs) {
+        // generate pattern
+        ruleExprs.stream().forEach(this::visit);
+
+        // generate prefix pattern
+        prefixExpr.stream().forEach(this::visit);
+
+        // generate case pattern
+        caseExprs.stream().forEach(this::visit);
+
+        // generate entry point
         this.stream.print("File = { ");
-        this.visit(prefixExpr);
+
+        this.stream.print("@{ ");
+        if(!prefixExpr.isEmpty()) {
+            this.stream.print("@");
+            this.stream.print(prefixExpr.get(0).getRuleName());
+        }
+        this.stream.print(" #Prefix } ");
 
         this.stream.print("@{ ( ");
         int count = 0;
-        for(CaseExpr caseExpr : caseExprs) {
+        for(RuleExpr caseExpr : caseExprs) {
             if(count > 0) {
                 this.stream.print(" / ");
             }
-            this.visit(caseExpr);
+            this.stream.print("@");
+            this.stream.print(caseExpr.getRuleName());
             this.stream.print(" #" + count++);
         }
         this.stream.print(") }");
 
         this.stream.println(" [ \\t\\r\\n]* #ResultAST }");
-
-        ruleExprs.stream().forEach(this::visit);
     }
 
     private void printTypeId(LType type) {
@@ -207,31 +227,6 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         this.stream.print(" ");
         this.printTypeId(expr.getType());
         this.stream.println(" }");
-        return null;
-    }
-
-    @Override
-    public Void visitPrefixExpr(PrefixExpr expr, Void param) {
-        this.stream.print("@{ ");
-        for(ParsingExpression e : expr.getExprs()) {
-            this.visit(e);
-            this.stream.print(" ");
-        }
-        this.stream.print("#Prefix } ");
-        return null;
-    }
-
-    @Override
-    public Void visitCaseExpr(CaseExpr expr, Void param) {
-        this.stream.print("( ");
-        int count = 0;
-        for(ParsingExpression e : expr.getExprs()) {
-            if(count++ > 0) {
-                this.stream.print(" ");
-            }
-            this.visit(e);
-        }
-        this.stream.print(" )");
         return null;
     }
 }
