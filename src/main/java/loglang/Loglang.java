@@ -25,7 +25,13 @@ public class Loglang {
 
         // dummy: FIXME
         for(int i = 0; i < caseNum; i++) {
-            this.cases[i] = (a) -> System.out.println(a.getText());
+            this.cases[i] = (p, a) -> {
+                if(p != null) {
+                    System.out.print(p.getText());
+                    System.out.print(" ");
+                }
+                System.out.println(a.getText());
+            };
         }
     }
 
@@ -50,12 +56,18 @@ public class Loglang {
                 System.exit(1);
             }
 
-            CommonTree tree = result.get(1);
-            String tagName = tree.getTag().getName();
+            CommonTree prefixTreeWrapper = result.get(0);
+            CommonTree caseTreeWrapper = result.get(1);
+
+            String tagName = caseTreeWrapper.getTag().getName();
             int id = Integer.parseInt(tagName);
 
             System.out.println("matched: " + tagName);
-            this.cases[id].invoke(tree.get(0));
+            this.cases[id].invoke(
+                    prefixTreeWrapper.isEmpty() ? null : prefixTreeWrapper.get(0),
+                    caseTreeWrapper.get(0)
+            );
+
             System.out.println();
         }
     }

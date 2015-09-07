@@ -7,5 +7,11 @@ import nez.ast.CommonTree;
  */
 @FunctionalInterface
 public interface CaseContext {
-    void invoke(CommonTree tree);
+    /**
+     *
+     * @param prefixTree
+     * may be null if has no  prefix
+     * @param bodyTree
+     */
+    void invoke(CommonTree prefixTree, CommonTree bodyTree);
 }
