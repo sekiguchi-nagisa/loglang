@@ -38,7 +38,7 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         }
         this.stream.print(") }");
 
-        this.stream.println(" #ResultAST }");
+        this.stream.println(" [ \\t\\r\\n]* #ResultAST }");
 
         ruleExprs.stream().forEach(this::visit);
     }
