@@ -9,8 +9,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import static loglang.peg.ParsingExpression.*;
-
 /**
  * Created by skgchxngsxyz-osx on 15/08/31.
  */
@@ -20,9 +18,9 @@ public class PrettyPrinter {
 
     public void printPEG(PrintStream stream, ParsingExpression expr) {
         this.stream = stream != null ? stream : System.err;
-        this.stream.flush();
         this.print(expr);
         this.stream.println();
+        this.stream.flush();
     }
 
     private void printIndent() {

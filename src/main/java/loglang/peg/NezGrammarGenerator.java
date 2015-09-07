@@ -5,7 +5,6 @@ import loglang.type.LType;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static loglang.peg.ParsingExpression.*;
 

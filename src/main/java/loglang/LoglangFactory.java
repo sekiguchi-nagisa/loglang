@@ -171,7 +171,7 @@ public class LoglangFactory {
 
             checker.checkType(ruleExprs);
             checker.checkType(prefixExpr);
-            caseExprs.stream().forEach((t) -> checker.checkType(t));
+            caseExprs.stream().forEach(checker::checkType);
         } catch(SemanticException e) {
             reportErrorAndExit(patternTree.getSource(), e);
         } catch(Exception e) {

@@ -35,7 +35,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         // verify and check type
         for(RuleExpr ruleExpr : rules) {
             this.visitedExprSet.clear();
-            this. labeledExprVerifier.visit(ruleExpr);
+            this.labeledExprVerifier.visit(ruleExpr);
             this.checkType(ruleExpr);
         }
     }
