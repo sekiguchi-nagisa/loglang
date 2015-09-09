@@ -1,4 +1,6 @@
-package loglang;
+package loglang.type;
+
+import loglang.TypeException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,10 +20,10 @@ public class SymbolTable {
      * @return
      * created case scope
      */
-    public ClassScope newCaseScope(String labelName) {
-        ClassScope scope = new ClassScope();
+    public ClassScope newCaseScope(TypeEnv env, String labelName) throws TypeException {
+        int index = this.cases.size();
+        ClassScope scope = new ClassScope(env.newCaseContextType(index));
         this.cases.add(scope);
-        int index = this.cases.size() - 1;
         if(labelName != null) {
             if(this.labelMap.put(labelName, index) != null) {
                 return null;    // found duplicated label

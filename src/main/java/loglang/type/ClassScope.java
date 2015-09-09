@@ -1,7 +1,7 @@
-package loglang;
+package loglang.type;
 
 import loglang.misc.Utils;
-import loglang.type.LType;
+import static loglang.type.MemberRef.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,11 +12,13 @@ import java.util.Objects;
  * for local variable and instance field management
  */
 public class ClassScope {
-    private final Map<String, SymbolEntry> fieldMap = new HashMap<>();
+    private final LType.AbstractStructureType type;
     private final ArrayList<Scope> scopes = new ArrayList<>();
     private final ArrayList<Integer> indexCounters = new ArrayList<>();
 
-    ClassScope() { } // not allow direct construction
+    ClassScope(LType.AbstractStructureType type) {
+        this.type = Objects.requireNonNull(type);
+    }
 
     /**
      *
@@ -25,9 +27,9 @@ public class ClassScope {
      * @return
      * if not found, return null.
      */
-    public SymbolEntry findEntry(String symbolName) {
+    public FieldRef findEntry(String symbolName) {
         // first, search state entry
-        SymbolEntry e = this.fieldMap.get(Objects.requireNonNull(symbolName));
+        FieldRef e = this.findField(symbolName);
         if(e != null) {
             return e;
         }
@@ -41,6 +43,10 @@ public class ClassScope {
             }
         }
         return null;
+    }
+
+    private FieldRef findField(String fieldName) {
+        return this.type.lookupField(fieldName);
     }
 
     public void enterMethod() {
@@ -78,40 +84,50 @@ public class ClassScope {
      * @return
      * if entry creation failed(found duplicated entry), return null.
      */
-    public SymbolEntry newLocalEntry(String symbolName, LType type, boolean readOnly) {
-        // check state variable
-        if(this.fieldMap.containsKey(Objects.requireNonNull(symbolName))) {
-            return null;
-        }
-
-        int attribute = LOCAL_VAR;
+    public FieldRef newLocalEntry(String symbolName, LType type, boolean readOnly) {
+        int attribute = MemberRef.LOCAL_VAR;
         if(readOnly) {
-            attribute = Utils.setFlag(attribute, READ_ONLY);
+            attribute = Utils.setFlag(attribute, MemberRef.READ_ONLY);
         }
-        return Utils.peek(this.scopes).newEntry(symbolName, type, attribute);
+        return this.newScopedEntry(symbolName, type, attribute, LType.anyType);
+    }
+
+    public FieldRef newPrefixTreeFieldEntry(String symbolName, LType type, LType ownerType) {
+        int attribute = MemberRef.PREFIX_TREE_FIELD | MemberRef.READ_ONLY;
+        return this.newScopedEntry(symbolName, type, attribute, ownerType);
+    }
+
+    public FieldRef newCaseTreeFieldEntry(String symbolName, LType type, LType ownerType) {
+        int attribute = MemberRef.CASE_TREE_FIELD | MemberRef.READ_ONLY;
+        return this.newScopedEntry(symbolName, type, attribute, ownerType);
     }
 
     /**
-     *
+     * generate symbol entry in scope
+     * @param symbolName
+     * @param type
+     * @param attribute
+     * @return
+     * if entry creation failed(found duplicated entry), return null.
+     */
+    private FieldRef newScopedEntry(String symbolName, LType type, int attribute, LType ownerType) {
+        // check state variable
+        if(this.findField(symbolName) != null) {
+            return null;    // already defined
+        }
+        return Utils.peek(this.scopes).newEntry(symbolName, type, attribute, ownerType);
+    }
+
+    /**
+     * generate symbol entry in instance field.
      * @param symbolName
      * @param type
      * @param readOnly
      * @return
      * if entry creation failed(found duplicated entry), return null.
      */
-    public SymbolEntry newStateEntry(String symbolName, LType type, boolean readOnly) {
-        // check duplication
-        if(this.fieldMap.containsKey(Objects.requireNonNull(symbolName))) {
-            return null;
-        }
-
-        int attribute = INSTANCE_FIELD;
-        if(readOnly) {
-            attribute = Utils.setFlag(attribute, READ_ONLY);
-        }
-        SymbolEntry e = new SymbolEntry(-1, type, attribute);
-        this.fieldMap.put(symbolName, e);
-        return e;
+    public FieldRef newStateEntry(String symbolName, LType type, boolean readOnly) {
+        return this.type.addField(symbolName, type);    //FIXME: read-only
     }
 
 
@@ -120,18 +136,27 @@ public class ClassScope {
      */
     private static class Scope {
         private int curIndex;
-        private final Map<String, SymbolEntry> entryMap;
+        private final Map<String, FieldRef> entryMap;
 
         private Scope(int curIndex) {
             this.curIndex = curIndex;
             this.entryMap = new HashMap<>();
         }
 
-        private SymbolEntry find(String symbolName) {
+        private FieldRef find(String symbolName) {
             return this.entryMap.get(symbolName);
         }
 
-        private SymbolEntry newEntry(String name, LType type, int attribute) {
+        /**
+         *
+         * @param name
+         * @param type
+         * @param attribute
+         * @param ownerType
+         * if generated entry represents local variable, ownerType is always anyType
+         * @return
+         */
+        private FieldRef newEntry(String name, LType type, int attribute, LType ownerType) {
             Objects.requireNonNull(name);
             Objects.requireNonNull(type);
 
@@ -139,35 +164,10 @@ public class ClassScope {
                 return null;
             }
 
-            attribute = Utils.setFlag(attribute, LOCAL_VAR);
-
-            SymbolEntry entry = new SymbolEntry(this.curIndex, type, attribute);
+            FieldRef entry = new FieldRef(this.curIndex, type, name, ownerType, attribute);
             this.entryMap.put(name, entry);
             this.curIndex += type.stackConsumption();
             return entry;
-        }
-    }
-
-    /**
-     * for symbol entry attribute
-     */
-    public final static int READ_ONLY      = 1;
-    public final static int LOCAL_VAR      = 1 << 1;
-    public final static int INSTANCE_FIELD = 1 << 2;
-
-    public static class SymbolEntry {
-        /**
-         * if entry represents instance field(state), index is -1.
-         */
-        public final int index;
-
-        public final LType type;
-        public final int attribute;
-
-        private SymbolEntry(int index, LType type, int attribute) {
-            this.index = index;
-            this.type = type;
-            this.attribute = attribute;
         }
     }
 }

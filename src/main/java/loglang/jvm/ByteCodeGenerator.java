@@ -5,6 +5,7 @@ import static loglang.Node.*;
 import loglang.*;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
+import loglang.type.MemberRef;
 import nez.ast.CommonTree;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.ClassWriter;
@@ -30,17 +31,8 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
      */
     private final Deque<Pair<Label, Label>> loopLabels = new ArrayDeque<>();
 
-    public ByteCodeGenerator() {
-        int num = Utils.getRandomNum();
-        if(num < 0) {
-            num = -num;
-        }
-        this.packageName = "loglang/generated" + num;
-    }
-
-
-    public String getPackageName() {
-        return this.packageName;
+    public ByteCodeGenerator(String packageName) {
+        this.packageName = packageName;
     }
 
     /**
@@ -137,16 +129,16 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
     @Override
     public Void visitVarDeclNode(VarDeclNode node, GeneratorAdapter param) {
         this.visit(node.getInitValueNode(), param);
-        Type desc = node.getEntry().type.asType();
-        param.visitVarInsn(desc.getOpcode(ISTORE), node.getEntry().index);
+        Type desc = node.getEntry().getFieldType().asType();
+        param.visitVarInsn(desc.getOpcode(ISTORE), node.getEntry().getIndex());
         return null;
     }
 
     @Override
     public Void visitVarNode(VarNode node, GeneratorAdapter param) {
-        Type desc = node.getEntry().type.asType();
-        if(Utils.hasFlag(node.getEntry().attribute, ClassScope.LOCAL_VAR)) {
-            param.visitVarInsn(desc.getOpcode(ILOAD), node.getEntry().index);
+        Type desc = node.getEntry().getFieldType().asType();
+        if(Utils.hasFlag(node.getEntry().getAttribute(), MemberRef.LOCAL_VAR)) {
+            param.visitVarInsn(desc.getOpcode(ILOAD), node.getEntry().getIndex());
         } else {
 //            param.get //FIXME:
         }

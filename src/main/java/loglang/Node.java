@@ -2,6 +2,7 @@ package loglang;
 
 import loglang.misc.LongRange;
 import loglang.type.LType;
+import loglang.type.MemberRef;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,6 +120,8 @@ public abstract class Node {
     }
 
     public static class CaseNode extends Node {
+        int caseIndex = -1;
+
         private final List<StateDeclNode> stateDeclNodes = new ArrayList<>();
         private final BlockNode blockNode;
 
@@ -141,6 +144,10 @@ public abstract class Node {
         @Override
         public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
             return visitor.visitCaseNode(this, param);
+        }
+
+        public int getCaseIndex() {
+            return this.caseIndex;
         }
 
         public BlockNode getBlockNode() {
@@ -229,7 +236,7 @@ public abstract class Node {
     public static class VarDeclNode extends Node {
         private final String name;
         private Node initValueNode;
-        private ClassScope.SymbolEntry entry;
+        private MemberRef.FieldRef entry;
 
         public VarDeclNode(LongRange range, String name, Node initValueNode) {
             super(range);
@@ -249,11 +256,11 @@ public abstract class Node {
             return initValueNode;
         }
 
-        public void setEntry(ClassScope.SymbolEntry entry) {
+        public void setEntry(MemberRef.FieldRef entry) {
             this.entry = entry;
         }
 
-        public ClassScope.SymbolEntry getEntry() {
+        public MemberRef.FieldRef getEntry() {
             return entry;
         }
 
@@ -265,7 +272,7 @@ public abstract class Node {
 
     public static class VarNode extends Node {
         private final String varName;
-        private ClassScope.SymbolEntry entry;
+        private MemberRef.FieldRef entry;
 
         public VarNode(LongRange range, String varName) {
             super(range);
@@ -277,7 +284,7 @@ public abstract class Node {
             return this.varName;
         }
 
-        public void setEntry(ClassScope.SymbolEntry entry) {
+        public void setEntry(MemberRef.FieldRef entry) {
             this.entry = Objects.requireNonNull(entry);
         }
 
@@ -286,7 +293,7 @@ public abstract class Node {
          * @return
          * return null before call setEntry
          */
-        public ClassScope.SymbolEntry getEntry() {
+        public MemberRef.FieldRef getEntry() {
             return this.entry;
         }
 
@@ -342,6 +349,7 @@ public abstract class Node {
         }
 
         public void addCaseNode(CaseNode node) {
+            node.caseIndex = this.caseNodes.size();
             this.caseNodes.add(node);
         }
     }

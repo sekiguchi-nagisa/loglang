@@ -35,16 +35,55 @@ public abstract class MemberRef {
         return ownerType;
     }
 
+
+    /**
+     * for symbol entry attribute
+     */
+    public final static int READ_ONLY         = 1;
+    public final static int LOCAL_VAR         = 1 << 1;
+    public final static int INSTANCE_FIELD    = 1 << 2;
+    public final static int PREFIX_TREE_FIELD = 1 << 3;
+    public final static int CASE_TREE_FIELD   = 1 << 4;
+    public final static int TREE_FIELD        = 1 << 5;
+
+    /**
+     * for instance field and local variable
+     */
     public static class FieldRef extends MemberRef {
         private final LType fieldType;
 
-        public FieldRef(LType fieldType, String fieldName, LType ownerType) {
+        /**
+         * if represents instance field(state), index is -1
+         */
+        private final int index;
+
+        private final int attribute;
+
+        /**
+         *
+         * @param index
+         * @param fieldType
+         * @param fieldName
+         * @param ownerType
+         * @param attribute
+         */
+        public FieldRef(int index, LType fieldType, String fieldName, LType ownerType, int attribute) {
             super(fieldName, ownerType);
             this.fieldType = Objects.requireNonNull(fieldType);
+            this.index = index;
+            this.attribute = attribute;
         }
 
         public LType getFieldType() {
             return fieldType;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public int getAttribute() {
+            return attribute;
         }
 
         @Override
@@ -57,7 +96,9 @@ public abstract class MemberRef {
             return obj instanceof FieldRef
                     && this.internalName.equals(((FieldRef) obj).internalName)
                     && this.ownerType.equals(((FieldRef) obj).ownerType)
-                    && this.fieldType.equals(((FieldRef) obj).fieldType);
+                    && this.fieldType.equals(((FieldRef) obj).fieldType)
+                    && this.index == ((FieldRef) obj).index
+                    && this.attribute == ((FieldRef) obj).attribute;
         }
     }
 

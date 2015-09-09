@@ -12,6 +12,8 @@ import loglang.type.LType.*;
  * Created by skgchxngsxyz-osx on 15/08/27.
  */
 public class TypeEnv {
+    private final String packageName;
+
     /**
      * key is mangled name
      */
@@ -25,6 +27,14 @@ public class TypeEnv {
 
 
     public TypeEnv() {
+        // generate package name
+        int num = Utils.getRandomNum();
+        if(num < 0) {
+            num = -num;
+        }
+        this.packageName = "loglang/generated" + num;
+
+        // register type
         this.typeMap.put(LType.voidType.getUniqueName(), LType.voidType);
         this.typeMap.put(LType.anyType.getUniqueName(), LType.anyType);
 
@@ -37,6 +47,10 @@ public class TypeEnv {
         } catch(TypeException e) {
             Utils.fatal(e.getMessage());
         }
+    }
+
+    public String getPackageName() {
+        return this.getPackageName();
     }
 
     /**
@@ -225,7 +239,7 @@ public class TypeEnv {
      * if already defined.
      */
     public void defineField(StructureType type, String fieldName, LType fieldType) throws TypeException {
-        if(!type.addField(fieldName, fieldType)) {
+        if(type.addField(fieldName, fieldType) == null) {
             typeError("already undefined field: " + fieldName + ", in " + type.getSimpleName());
         }
     }
@@ -240,5 +254,14 @@ public class TypeEnv {
 
     public static String createAnonymousCaseTypeName(int caseIndex) {
         return "__Anonymous_case_type_" + caseIndex + "__";
+    }
+
+    public CaseContextType newCaseContextType(int index) throws TypeException {
+        String simpleName = "CaseContextImpl" + index;
+        String mangledName = Mangler.mangleBasicType(simpleName);
+        return (CaseContextType) this.registerType(
+                mangledName,
+                new CaseContextType(mangledName, this.packageName + "/" + simpleName)
+        );
     }
 }

@@ -1,6 +1,5 @@
 package loglang.type;
 
-import loglang.misc.ImmutablePair;
 import org.objectweb.asm.Type;
 
 import java.util.*;
@@ -142,6 +141,10 @@ public class LType implements Comparable<LType> {
         return null;
     }
 
+    public List<MemberRef.FieldRef> findAllFields() {
+        return Collections.emptyList();
+    }
+
     /**
      *
      * @param methodName
@@ -151,6 +154,10 @@ public class LType implements Comparable<LType> {
      */
     public MemberRef.MethodRef lookupMethod(String methodName) {
         return null;
+    }
+
+    public List<MemberRef> findAllMethods() {
+        return Collections.emptyList();
     }
 
     /**
@@ -294,36 +301,73 @@ public class LType implements Comparable<LType> {
         }
     }
 
-    public static class StructureType extends LType {
-        /**
-         * key is field name.
-         * value is pair of field index and field type.
-         */
-        private final Map<String, ImmutablePair<Integer, LType>> fieldMap = new HashMap<>();
+    public static abstract class AbstractStructureType extends LType {
+        protected final Map<String, MemberRef.FieldRef> fieldMap = new HashMap<>();
 
+        AbstractStructureType(String uniqueName, String internalName, LType superType) {
+            super(uniqueName, internalName, superType);
+        }
+
+        abstract MemberRef.FieldRef addField(String fieldName, LType fieldType);
+
+        @Override
+        public MemberRef.FieldRef lookupField(String fieldName) {
+            return this.fieldMap.get(fieldName);
+        }
+
+        @Override
+        public List<MemberRef.FieldRef> findAllFields() {
+            ArrayList<MemberRef.FieldRef> list = new ArrayList<>(this.fieldMap.size());
+            for(MemberRef.FieldRef ref : this.fieldMap.values()) {
+                list.add(ref);
+            }
+            return list;
+        }
+    }
+
+    public static class StructureType extends AbstractStructureType {
         StructureType(String uniqueName) {
             super(uniqueName, List.class.getCanonicalName(), anyType);  //FIXME: internal name
         }
 
-        boolean addField(String fieldName, LType fieldType) {
+        @Override
+        MemberRef.FieldRef addField(String fieldName, LType fieldType) {
             Objects.requireNonNull(fieldName);
             Objects.requireNonNull(fieldType);
 
             if(this.fieldMap.containsKey(fieldName)) {
-                return false;
+                return null;
             }
-            this.fieldMap.put(fieldName, ImmutablePair.of(this.fieldMap.size(), fieldType));
-            return true;
+
+            final int fieldIndex = this.fieldMap.size();
+            final int attribute = MemberRef.TREE_FIELD | MemberRef.READ_ONLY;
+
+            MemberRef.FieldRef ref = new MemberRef.FieldRef(fieldIndex, fieldType, fieldName, this, attribute);
+            this.fieldMap.put(fieldName, ref);
+            return ref;
+        }
+    }
+
+    public static class CaseContextType extends AbstractStructureType {
+        CaseContextType(String uniqueName, String internalName) {
+            super(uniqueName, internalName, anyType);
         }
 
-        /**
-         *
-         * @param fieldName
-         * @return
-         * if not found, return null.
-         */
-        public ImmutablePair<Integer, LType> findField(String fieldName) {
-            return this.fieldMap.get(Objects.requireNonNull(fieldName));
+        @Override
+        MemberRef.FieldRef addField(String fieldName, LType fieldType) {
+            Objects.requireNonNull(fieldName);
+            Objects.requireNonNull(fieldType);
+
+            if(this.fieldMap.containsKey(fieldName)) {
+                return null;
+            }
+
+            final int fieldIndex = -1;
+            final int attribute = MemberRef.INSTANCE_FIELD;
+
+            MemberRef.FieldRef ref = new MemberRef.FieldRef(fieldIndex, fieldType, fieldName, this, attribute);
+            this.fieldMap.put(fieldName, ref);
+            return ref;
         }
     }
 }

@@ -51,8 +51,8 @@ public class LoglangFactory {
         } catch(Exception e) {
             reportErrorAndExit(matcherTree.getSource(), e);
         }
-        ByteCodeGenerator gen = new ByteCodeGenerator();
-        ByteCodeLoader loader = new ByteCodeLoader(gen.getPackageName());
+        ByteCodeGenerator gen = new ByteCodeGenerator(env.getPackageName());
+        ByteCodeLoader loader = new ByteCodeLoader(env.getPackageName());
         for(Node.CaseNode caseNode : rootNode.getCaseNodes()) {
             Pair<String, byte[]> pair = gen.generateCode(caseNode);
             loader.definedAndLoadClass(pair.getLeft(), pair.getRight());

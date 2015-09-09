@@ -1,7 +1,6 @@
 package loglang;
 
-import loglang.type.LType;
-import loglang.type.TypeEnv;
+import loglang.type.*;
 
 import java.util.Objects;
 
@@ -117,12 +116,22 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     @Override
     public Node visitCaseNode(CaseNode node, Void param) {  //FIXME: case parameter
         // create new ClassScope
-        this.classScope = this.symbolTable.newCaseScope(node.getLabelName());
+        try {
+            this.classScope = this.symbolTable.newCaseScope(this.env, node.getLabelName());
+        } catch(TypeException e) {
+            throw new SemanticException(node.getRange(), e);
+        }
         this.classScope.enterMethod();
 
+        // register state entry
         for(StateDeclNode child : node.getStateDeclNodes()) {
             this.checkTypeAsStatement(child);
         }
+
+        // register prefix tree field entry
+//        String name = TypeEnv.getAnonymousPrefixTypeName();
+//        LType stype = this.env.get
+
         this.checkTypeWithCurrentScope(node.getBlockNode());
 
         node.setLocalSize(this.classScope.getMaximumLocalSize());
@@ -144,7 +153,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         node.setInitValueNode(this.checkType(node.getInitValueNode()));
 
         LType type = node.getInitValueNode().getType();
-        ClassScope.SymbolEntry entry = this.classScope.newStateEntry(node.getName(), type, false);
+        MemberRef.FieldRef entry = this.classScope.newStateEntry(node.getName(), type, false);
         if(entry == null) {
             semanticError(node.getRange(), "already defined state variable: " + node.getName());
         }
@@ -158,7 +167,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         node.setInitValueNode(this.checkType(node.getInitValueNode()));
 
         LType type = node.getInitValueNode().getType();
-        ClassScope.SymbolEntry entry = this.classScope.newLocalEntry(node.getName(), type, false);
+        MemberRef.FieldRef entry = this.classScope.newLocalEntry(node.getName(), type, false);
         if(entry == null) {
             semanticError(node.getRange(), "already defined local variable: " + node.getName());
         }
@@ -170,13 +179,13 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     @Override
     public Node visitVarNode(VarNode node, Void param) {
-        ClassScope.SymbolEntry entry = this.classScope.findEntry(node.getVarName());
+        MemberRef.FieldRef entry = this.classScope.findEntry(node.getVarName());
         if(entry == null) {
             semanticError(node.getRange(), "undefined variable: " + node.getVarName());
         }
 
         node.setEntry(entry);
-        node.setType(entry.type);
+        node.setType(entry.getFieldType());
         return node;
     }
 
