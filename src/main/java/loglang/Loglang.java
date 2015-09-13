@@ -12,13 +12,11 @@ import java.util.Objects;
  * Created by skgchxngsxyz-osx on 15/08/11.
  */
 public class Loglang {
-    private final String scriptName;
     private final Grammar patternGrammar;
 
     private CaseContext[] cases;
 
-    public Loglang(String scriptName, Grammar patternGrammar, int caseNum) {
-        this.scriptName = scriptName;
+    Loglang(Grammar patternGrammar, int caseNum) {
         this.patternGrammar = patternGrammar;
 
         this.cases = new CaseContext[caseNum];

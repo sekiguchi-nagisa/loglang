@@ -49,9 +49,22 @@ public class ClassScope {
         return this.type.lookupField(fieldName);
     }
 
+    /**
+     *
+     * @param initLocalSize
+     * if this method represents static method, initLocalSize is 0.
+     * if this method represents instance method, initLocalSize is 1
+     */
+    public void enterMethod(int initLocalSize) {
+        this.scopes.add(new Scope(initLocalSize));
+        this.indexCounters.add(initLocalSize);
+    }
+
+    /**
+     * equivalent ot enterMethod(0)
+     */
     public void enterMethod() {
-        this.scopes.add(new Scope(0));
-        this.indexCounters.add(0);
+        this.enterMethod(0);
     }
 
     public void exitMethod() {
@@ -85,37 +98,16 @@ public class ClassScope {
      * if entry creation failed(found duplicated entry), return null.
      */
     public FieldRef newLocalEntry(String symbolName, LType type, boolean readOnly) {
-        int attribute = MemberRef.LOCAL_VAR;
-        if(readOnly) {
-            attribute = Utils.setFlag(attribute, MemberRef.READ_ONLY);
-        }
-        return this.newScopedEntry(symbolName, type, attribute, LType.anyType);
-    }
-
-    public FieldRef newPrefixTreeFieldEntry(String symbolName, LType type, LType ownerType) {
-        int attribute = MemberRef.PREFIX_TREE_FIELD | MemberRef.READ_ONLY;
-        return this.newScopedEntry(symbolName, type, attribute, ownerType);
-    }
-
-    public FieldRef newCaseTreeFieldEntry(String symbolName, LType type, LType ownerType) {
-        int attribute = MemberRef.CASE_TREE_FIELD | MemberRef.READ_ONLY;
-        return this.newScopedEntry(symbolName, type, attribute, ownerType);
-    }
-
-    /**
-     * generate symbol entry in scope
-     * @param symbolName
-     * @param type
-     * @param attribute
-     * @return
-     * if entry creation failed(found duplicated entry), return null.
-     */
-    private FieldRef newScopedEntry(String symbolName, LType type, int attribute, LType ownerType) {
         // check state variable
         if(this.findField(symbolName) != null) {
             return null;    // already defined
         }
-        return Utils.peek(this.scopes).newEntry(symbolName, type, attribute, ownerType);
+
+        int attribute = MemberRef.LOCAL_VAR;
+        if(readOnly) {
+            attribute = Utils.setFlag(attribute, MemberRef.READ_ONLY);
+        }
+        return Utils.peek(this.scopes).newEntry(symbolName, type, attribute, LType.anyType);
     }
 
     /**

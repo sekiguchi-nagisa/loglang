@@ -50,7 +50,7 @@ public class TypeEnv {
     }
 
     public String getPackageName() {
-        return this.getPackageName();
+        return this.packageName;
     }
 
     /**
@@ -252,8 +252,12 @@ public class TypeEnv {
         return "__Anonymous_prefix_type__";
     }
 
+    public static String getAnonymousCaseTypeNamePrefix() {
+        return "__Anonymous_case_type_";
+    }
+
     public static String createAnonymousCaseTypeName(int caseIndex) {
-        return "__Anonymous_case_type_" + caseIndex + "__";
+        return getAnonymousCaseTypeNamePrefix() + caseIndex + "__";
     }
 
     public CaseContextType newCaseContextType(int index) throws TypeException {

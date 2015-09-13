@@ -1,5 +1,6 @@
 package loglang.type;
 
+import loglang.misc.Utils;
 import org.objectweb.asm.Type;
 
 import java.util.*;
@@ -340,7 +341,15 @@ public class LType implements Comparable<LType> {
             }
 
             final int fieldIndex = this.fieldMap.size();
-            final int attribute = MemberRef.TREE_FIELD | MemberRef.READ_ONLY;
+            int attribute = MemberRef.READ_ONLY;
+            String simpleName = this.getSimpleName();
+            if(simpleName.startsWith(TypeEnv.getAnonymousCaseTypeNamePrefix())) {
+                attribute = Utils.setFlag(attribute, MemberRef.CASE_TREE_FIELD);
+            } else if(simpleName.startsWith(TypeEnv.getAnonymousPrefixTypeName())) {
+                attribute = Utils.setFlag(attribute, MemberRef.PREFIX_TREE_FIELD);
+            } else {
+                attribute = Utils.setFlag(attribute, MemberRef.TREE_FIELD);
+            }
 
             MemberRef.FieldRef ref = new MemberRef.FieldRef(fieldIndex, fieldType, fieldName, this, attribute);
             this.fieldMap.put(fieldName, ref);

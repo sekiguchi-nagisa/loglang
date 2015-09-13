@@ -58,7 +58,7 @@ public class LoglangFactory {
             loader.definedAndLoadClass(pair.getLeft(), pair.getRight());
         }
 
-        return new Loglang(scriptName, patternGrammar, caseTrees.size());
+        return new Loglang(patternGrammar, caseTrees.size());
     }
 
     /**
