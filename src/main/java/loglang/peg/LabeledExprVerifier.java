@@ -9,10 +9,10 @@ import java.util.ArrayList;
  * Created by skgchxngsxyz-opensuse on 15/09/03.
  */
 public class LabeledExprVerifier extends BaseVisitor<Void, Void> {
-    private final ArrayList<ParsingExpression> exprStack = new ArrayList<>();
+    private final ArrayList<TypedPEG> exprStack = new ArrayList<>();
 
     @Override
-    public Void visit(ParsingExpression expr, Void param) {
+    public Void visit(TypedPEG expr, Void param) {
         Utils.push(this.exprStack, expr);
         expr.accept(this, param);
         Utils.pop(this.exprStack);
@@ -20,60 +20,60 @@ public class LabeledExprVerifier extends BaseVisitor<Void, Void> {
     }
 
     @Override
-    public Void visitDefault(ParsingExpression expr, Void param) {
+    public Void visitDefault(TypedPEG expr, Void param) {
         return null;
     }
 
     @Override
-    public Void visitRepeatExpr(ParsingExpression.RepeatExpr expr, Void param) {
+    public Void visitRepeatExpr(TypedPEG.RepeatExpr expr, Void param) {
         return this.visit(expr.getExpr());
     }
 
     @Override
-    public Void visitOptionalExpr(ParsingExpression.OptionalExpr expr, Void param) {
+    public Void visitOptionalExpr(TypedPEG.OptionalExpr expr, Void param) {
         return this.visit(expr.getExpr());
     }
 
     @Override
-    public Void visitPredicateExpr(ParsingExpression.PredicateExpr expr, Void param) {
+    public Void visitPredicateExpr(TypedPEG.PredicateExpr expr, Void param) {
         return this.visit(expr.getExpr());
     }
 
     @Override
-    public Void visitChoiceExpr(ParsingExpression.ChoiceExpr expr, Void param) {
-        for(ParsingExpression e : expr.getExprs()) {
+    public Void visitChoiceExpr(TypedPEG.ChoiceExpr expr, Void param) {
+        for(TypedPEG e : expr.getExprs()) {
             this.visit(e);
         }
         return null;
     }
 
     @Override
-    public Void visitSequenceExpr(ParsingExpression.SequenceExpr expr, Void param) {
-        for(ParsingExpression e : expr.getExprs()) {
+    public Void visitSequenceExpr(TypedPEG.SequenceExpr expr, Void param) {
+        for(TypedPEG e : expr.getExprs()) {
             this.visit(e);
         }
         return null;
     }
 
     @Override
-    public Void visitRuleExpr(ParsingExpression.RuleExpr expr, Void param) {
+    public Void visitRuleExpr(TypedPEG.RuleExpr expr, Void param) {
         return this.visit(expr.getExpr());
     }
 
     @Override
-    public Void visitTypedRuleExpr(ParsingExpression.TypedRuleExpr expr, Void param) {
+    public Void visitTypedRuleExpr(TypedPEG.TypedRuleExpr expr, Void param) {
         return this.visit(expr.getExpr());
     }
 
     @Override
-    public Void visitLabeledExpr(ParsingExpression.LabeledExpr expr, Void param) {
+    public Void visitLabeledExpr(TypedPEG.LabeledExpr expr, Void param) {
         if(this.exprStack.size() == 3
-                && this.exprStack.get(0) instanceof ParsingExpression.RuleExpr
-                && this.exprStack.get(1) instanceof ParsingExpression.SequenceExpr) {
+                && this.exprStack.get(0) instanceof TypedPEG.RuleExpr
+                && this.exprStack.get(1) instanceof TypedPEG.SequenceExpr) {
             return this.visit(expr.getExpr());
         }
         if(this.exprStack.size() == 2
-                && this.exprStack.get(0) instanceof ParsingExpression.RuleExpr) {
+                && this.exprStack.get(0) instanceof TypedPEG.RuleExpr) {
             return this.visit(expr.getExpr());
         }
         this.exprStack.clear();

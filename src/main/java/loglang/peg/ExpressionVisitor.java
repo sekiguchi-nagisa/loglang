@@ -1,16 +1,16 @@
 package loglang.peg;
 
-import static loglang.peg.ParsingExpression.*;
+import static loglang.peg.TypedPEG.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/28.
  */
 public interface ExpressionVisitor<T, P> {
-    default T visit(ParsingExpression expr) {
+    default T visit(TypedPEG expr) {
         return this.visit(expr, null);
     }
 
-    default T visit(ParsingExpression expr, P param) {
+    default T visit(TypedPEG expr, P param) {
         return expr.accept(this, param);
     }
 
@@ -26,4 +26,5 @@ public interface ExpressionVisitor<T, P> {
     T visitLabeledExpr(LabeledExpr expr, P param);
     T visitRuleExpr(RuleExpr expr, P param);
     T visitTypedRuleExpr(TypedRuleExpr expr, P param);
+    T visitRootExpr(RootExpr expr, P param);
 }

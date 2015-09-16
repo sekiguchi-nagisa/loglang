@@ -2,13 +2,12 @@ package loglang.peg;
 
 import loglang.SemanticException;
 import loglang.TypeException;
-import loglang.misc.TypeMatch;
 import loglang.type.LType;
 import loglang.type.TypeEnv;
 
 import java.util.*;
 
-import static loglang.peg.ParsingExpression.*;
+import static loglang.peg.TypedPEG.*;
 import static loglang.SemanticException.*;
 
 /**
@@ -19,7 +18,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     private final Map<String, RuleExpr> ruleMap = new HashMap<>();
     private final LabeledExprVerifier labeledExprVerifier = new LabeledExprVerifier();
     private final LabeledExprDetector labeledExprDetector = new LabeledExprDetector();
-    private final Set<ParsingExpression> visitedExprSet = new HashSet<>();
+    private final Set<TypedPEG> visitedExprSet = new HashSet<>();
 
     public ExprTypeChecker(TypeEnv env) {
         this.env = Objects.requireNonNull(env);
@@ -41,11 +40,11 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         }
     }
 
-    public LType checkType(ParsingExpression expr) {
+    public LType checkType(TypedPEG expr) {
         return this.checkType(null, expr);
     }
 
-    public LType checkType(LType requiredType, ParsingExpression expr) {
+    public LType checkType(LType requiredType, TypedPEG expr) {
         LType type = expr.getType() != null ? expr.getType() : this.visit(expr);
         if(type == null) {
             semanticError(expr.getRange(), "broken visit" + expr.getClass().getSimpleName());
@@ -60,7 +59,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     }
 
     @Override
-    public LType visit(ParsingExpression expr, Void param) {
+    public LType visit(TypedPEG expr, Void param) {
         if(!this.visitedExprSet.add(Objects.requireNonNull(expr))) {
             semanticError(expr.getRange(), "detect circular reference");
         }
@@ -111,7 +110,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     @Override
     public LType visitSequenceExpr(SequenceExpr expr, Void param) {
         List<LType> types = new ArrayList<>();
-        for(ParsingExpression e : expr.getExprs()) {
+        for(TypedPEG e : expr.getExprs()) {
             LType type = this.checkType(e);
             if(!type.isVoid()) {
                 types.add(type);
@@ -134,7 +133,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
     @Override
     public LType visitChoiceExpr(ChoiceExpr expr, Void param) {
         List<LType> types = new ArrayList<>();
-        for(ParsingExpression e : expr.getExprs()) {
+        for(TypedPEG e : expr.getExprs()) {
             LType type = this.checkType(e);
             if(!type.isVoid()) {
                 types.add(type);
@@ -169,7 +168,7 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
 
     @Override
     public LType visitNonTerminalExpr(NonTerminalExpr expr, Void param) {
-        ParsingExpression targetExpr = this.ruleMap.get(expr.getName());
+        TypedPEG targetExpr = this.ruleMap.get(expr.getName());
         if(targetExpr == null) {
             semanticError(expr.getRange(), "undefined rule: " + expr.getName());
         }
@@ -209,9 +208,9 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
                 this.checkType(this.env.getVoidType(), expr.getExpr());
 
                 // define field
-                ParsingExpression rightHandSideExpr = expr.getExpr();
+                TypedPEG rightHandSideExpr = expr.getExpr();
                 if(rightHandSideExpr instanceof SequenceExpr) {
-                    for(ParsingExpression e : ((SequenceExpr) rightHandSideExpr).getExprs()) {
+                    for(TypedPEG e : ((SequenceExpr) rightHandSideExpr).getExprs()) {
                         if(e instanceof LabeledExpr) {
                             LabeledExpr l = (LabeledExpr) e;
                             this.env.defineField(type, l.getLabelName(), l.getExprType());
@@ -231,5 +230,11 @@ public class ExprTypeChecker implements ExpressionVisitor<LType, Void> {
         } catch(TypeException e) {
             throw new SemanticException(expr.getRange(), e);
         }
+    }
+
+    @Override
+    public LType visitRootExpr(RootExpr expr, Void param) {
+        this.checkType(expr.getExprs());
+        return expr.setType(this.env.getVoidType());
     }
 }

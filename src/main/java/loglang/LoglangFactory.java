@@ -105,11 +105,11 @@ public class LoglangFactory {
         return caseTrees;
     }
 
-    private List<ParsingExpression.RuleExpr> createRuleExprs(CommonTree patternTree) {
+    private List<TypedPEG.RuleExpr> createRuleExprs(CommonTree patternTree) {
         Tree2ExprTranslator translator = new Tree2ExprTranslator();
-        List<ParsingExpression.RuleExpr> ruleExprs = new ArrayList<>();
+        List<TypedPEG.RuleExpr> ruleExprs = new ArrayList<>();
         for(CommonTree ruleTree : patternTree) {
-            ruleExprs.add((ParsingExpression.RuleExpr) translator.translate(ruleTree));
+            ruleExprs.add((TypedPEG.RuleExpr) translator.translate(ruleTree));
         }
         return ruleExprs;
     }
@@ -120,29 +120,29 @@ public class LoglangFactory {
      * @return
      * empty or singleton list
      */
-    private List<ParsingExpression.RuleExpr> createPrefixExpr(CommonTree prefixTree) {
+    private List<TypedPEG.RuleExpr> createPrefixExpr(CommonTree prefixTree) {
         if(prefixTree.isEmpty()) {
             return Collections.emptyList();
         }
-        ParsingExpression expr = new Tree2ExprTranslator().translate(prefixTree.get(0));
+        TypedPEG expr = new Tree2ExprTranslator().translate(prefixTree.get(0));
         String name = TypeEnv.getAnonymousPrefixTypeName();
-        return Collections.singletonList(new ParsingExpression.TypedRuleExpr(expr.getRange(), name, name, expr));
+        return Collections.singletonList(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
     }
 
-    private List<ParsingExpression.RuleExpr> createCaseExprs(List<CommonTree> caseTrees) {
+    private List<TypedPEG.RuleExpr> createCaseExprs(List<CommonTree> caseTrees) {
         Tree2ExprTranslator translator = new Tree2ExprTranslator();
-        List<ParsingExpression.RuleExpr> casePatterns = new ArrayList<>();
+        List<TypedPEG.RuleExpr> casePatterns = new ArrayList<>();
         for(int i = 0; i < caseTrees.size(); i++) {
             String name = TypeEnv.createAnonymousCaseTypeName(i);
-            ParsingExpression expr = translator.translate(caseTrees.get(i));
-            casePatterns.add(new ParsingExpression.TypedRuleExpr(expr.getRange(), name, name, expr));
+            TypedPEG expr = translator.translate(caseTrees.get(i));
+            casePatterns.add(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
         }
         return casePatterns;
     }
 
-    private void dumpPattern(List<ParsingExpression.RuleExpr> ruleExprs,
-                             List<ParsingExpression.RuleExpr> prefixExpr,
-                             List<ParsingExpression.RuleExpr> caseExprs) {
+    private void dumpPattern(List<TypedPEG.RuleExpr> ruleExprs,
+                             List<TypedPEG.RuleExpr> prefixExpr,
+                             List<TypedPEG.RuleExpr> caseExprs) {
         PrettyPrinter printer = new PrettyPrinter();
 
         System.err.println("@@ dump Rule @@");
@@ -167,9 +167,9 @@ public class LoglangFactory {
      */
     private Grammar newPatternGrammar(TypeEnv env, CommonTree patternTree,
                                       CommonTree prefixTree, List<CommonTree> caseTrees) {
-        List<ParsingExpression.RuleExpr> ruleExprs = this.createRuleExprs(patternTree);
-        List<ParsingExpression.RuleExpr> prefixExpr = this.createPrefixExpr(prefixTree);
-        List<ParsingExpression.RuleExpr> caseExprs = this.createCaseExprs(caseTrees);
+        List<TypedPEG.RuleExpr> ruleExprs = this.createRuleExprs(patternTree);
+        List<TypedPEG.RuleExpr> prefixExpr = this.createPrefixExpr(prefixTree);
+        List<TypedPEG.RuleExpr> caseExprs = this.createCaseExprs(caseTrees);
 
         if(Config.dumpPEG) {
             System.err.println("++++ dump PEG ++++");

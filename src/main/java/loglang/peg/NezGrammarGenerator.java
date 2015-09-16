@@ -6,7 +6,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Objects;
 
-import static loglang.peg.ParsingExpression.*;
+import static loglang.peg.TypedPEG.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/09/03.
@@ -73,7 +73,7 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
      * @param expr
      * type is not void
      */
-    private void printExpr(ParsingExpression expr) {
+    private void printExpr(TypedPEG expr) {
         this.stream.print("@");
         this.visit(expr);
     }
@@ -148,7 +148,7 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         if(!(expr.getType() instanceof LType.TupleType)) {
             this.stream.print("( ");
             int count = 0;
-            for(ParsingExpression e : expr.getExprs()) {
+            for(TypedPEG e : expr.getExprs()) {
                 if(count++ > 0) {
                     this.stream.print(" ");
                 }
@@ -158,7 +158,7 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         } else {
             this.stream.print("{ ");
             int count = 0;
-            for(ParsingExpression e : expr.getExprs()) {
+            for(TypedPEG e : expr.getExprs()) {
                 if(count++ > 0) {
                     this.stream.print(" ");
                 }
@@ -175,7 +175,7 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         if(!(expr.getType() instanceof LType.UnionType)) {
             this.stream.print("( ");
             int count = 0;
-            for(ParsingExpression e : expr.getExprs()) {
+            for(TypedPEG e : expr.getExprs()) {
                 if(count++ > 0) {
                     this.stream.print(" / ");
                 }
@@ -185,7 +185,7 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         } else {
             this.stream.print("{ (");
             int count = 0;
-            for(ParsingExpression e : expr.getExprs()) {
+            for(TypedPEG e : expr.getExprs()) {
                 if(count++ > 0) {
                     this.stream.print(" / ");
                 }
@@ -227,6 +227,12 @@ public class NezGrammarGenerator implements ExpressionVisitor<Void, Void> {
         this.stream.print(" ");
         this.printTypeId(expr.getType());
         this.stream.println(" }");
+        return null;
+    }
+
+    @Override
+    public Void visitRootExpr(RootExpr expr, Void param) {
+        expr.getExprs().stream().forEach(this::visit);
         return null;
     }
 }

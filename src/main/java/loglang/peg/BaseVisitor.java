@@ -4,66 +4,71 @@ package loglang.peg;
  * Created by skgchxngsxyz-opensuse on 15/09/02.
  */
 public abstract class BaseVisitor<R, P> implements ExpressionVisitor<R, P> {
-    public abstract R visitDefault(ParsingExpression expr, P param);
+    public abstract R visitDefault(TypedPEG expr, P param);
 
 
     @Override
-    public R visitAnyExpr(ParsingExpression.AnyExpr expr, P param) {
+    public R visitAnyExpr(TypedPEG.AnyExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitStringExpr(ParsingExpression.StringExpr expr, P param) {
+    public R visitStringExpr(TypedPEG.StringExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitCharClassExpr(ParsingExpression.CharClassExpr expr, P param) {
+    public R visitCharClassExpr(TypedPEG.CharClassExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitRepeatExpr(ParsingExpression.RepeatExpr expr, P param) {
+    public R visitRepeatExpr(TypedPEG.RepeatExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitOptionalExpr(ParsingExpression.OptionalExpr expr, P param) {
+    public R visitOptionalExpr(TypedPEG.OptionalExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitPredicateExpr(ParsingExpression.PredicateExpr expr, P param) {
+    public R visitPredicateExpr(TypedPEG.PredicateExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitSequenceExpr(ParsingExpression.SequenceExpr expr, P param) {
+    public R visitSequenceExpr(TypedPEG.SequenceExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitChoiceExpr(ParsingExpression.ChoiceExpr expr, P param) {
+    public R visitChoiceExpr(TypedPEG.ChoiceExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitNonTerminalExpr(ParsingExpression.NonTerminalExpr expr, P param) {
+    public R visitNonTerminalExpr(TypedPEG.NonTerminalExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitLabeledExpr(ParsingExpression.LabeledExpr expr, P param) {
+    public R visitLabeledExpr(TypedPEG.LabeledExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitRuleExpr(ParsingExpression.RuleExpr expr, P param) {
+    public R visitRuleExpr(TypedPEG.RuleExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 
     @Override
-    public R visitTypedRuleExpr(ParsingExpression.TypedRuleExpr expr, P param) {
+    public R visitTypedRuleExpr(TypedPEG.TypedRuleExpr expr, P param) {
+        return this.visitDefault(expr, param);
+    }
+
+    @Override
+    public R visitRootExpr(TypedPEG.RootExpr expr, P param) {
         return this.visitDefault(expr, param);
     }
 }

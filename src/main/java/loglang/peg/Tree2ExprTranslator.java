@@ -1,14 +1,24 @@
 package loglang.peg;
 
 import loglang.TreeTranslator;
+import nez.ast.CommonTree;
 
-import static loglang.peg.ParsingExpression.*;
+import static loglang.peg.TypedPEG.*;
 import static nez.ast.ASTHelper.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/28.
  */
-public class Tree2ExprTranslator extends TreeTranslator<ParsingExpression> {{
+public class Tree2ExprTranslator extends TreeTranslator<TypedPEG> {{
+    this.add("RootExpr", (t) -> {
+        RuleExpr[] ruleExprs = new RuleExpr[t.size()];
+        int index = 0;
+        for(CommonTree tree : t) {
+            ruleExprs[index++] = (RuleExpr) this.translate(tree);
+        }
+        return new RootExpr(range(t), ruleExprs);
+    });
+
     this.add("RuleExpr", (t) -> {
         String typeName = t.get(1).getText();
         if(typeName.equals("")) {   // untyped

@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Created by skgchxngsxyz-osx on 15/08/28.
  */
-public abstract class ParsingExpression {
+public abstract class TypedPEG {
     protected final LongRange range;
 
     /**
@@ -16,7 +16,7 @@ public abstract class ParsingExpression {
      */
     protected LType type;
 
-    public ParsingExpression(LongRange range) {
+    public TypedPEG(LongRange range) {
         this.range = range;
     }
 
@@ -39,7 +39,7 @@ public abstract class ParsingExpression {
 
     public abstract <T, P> T accept(ExpressionVisitor<T, P> visitor, P param);
 
-    public static class AnyExpr extends ParsingExpression {
+    public static class AnyExpr extends TypedPEG {
         public AnyExpr(LongRange range) {
             super(range);
         }
@@ -50,7 +50,7 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class StringExpr extends ParsingExpression {
+    public static class StringExpr extends TypedPEG {
         private final String text;
 
         /**
@@ -73,7 +73,7 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class CharClassExpr extends ParsingExpression {
+    public static class CharClassExpr extends TypedPEG {
         private final String text;
 
         /**
@@ -99,8 +99,8 @@ public abstract class ParsingExpression {
     /**
      * for Zero More and One More
      */
-    public static class RepeatExpr extends ParsingExpression {
-        private final ParsingExpression expr;
+    public static class RepeatExpr extends TypedPEG {
+        private final TypedPEG expr;
 
         /**
          * if true, represents zero more.
@@ -108,21 +108,21 @@ public abstract class ParsingExpression {
          */
         private final boolean zereMore;
 
-        private RepeatExpr(LongRange range, ParsingExpression expr, boolean zeroMore) {
+        private RepeatExpr(LongRange range, TypedPEG expr, boolean zeroMore) {
             super(range);
             this.expr = Objects.requireNonNull(expr);
             this.zereMore = zeroMore;
         }
 
-        public static RepeatExpr oneMore(LongRange range, ParsingExpression expr) {
+        public static RepeatExpr oneMore(LongRange range, TypedPEG expr) {
             return new RepeatExpr(range, expr, false);
         }
 
-        public static RepeatExpr zeroMore(LongRange range, ParsingExpression expr) {
+        public static RepeatExpr zeroMore(LongRange range, TypedPEG expr) {
             return new RepeatExpr(range, expr, true);
         }
 
-        public ParsingExpression getExpr() {
+        public TypedPEG getExpr() {
             return expr;
         }
 
@@ -136,15 +136,15 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class OptionalExpr extends ParsingExpression {
-        private final ParsingExpression expr;
+    public static class OptionalExpr extends TypedPEG {
+        private final TypedPEG expr;
 
-        public OptionalExpr(LongRange range, ParsingExpression expr) {
+        public OptionalExpr(LongRange range, TypedPEG expr) {
             super(range);
             this.expr = Objects.requireNonNull(expr);
         }
 
-        public ParsingExpression getExpr() {
+        public TypedPEG getExpr() {
             return expr;
         }
 
@@ -157,8 +157,8 @@ public abstract class ParsingExpression {
     /**
      * for And predicate or Not predicate
      */
-    public static class PredicateExpr extends ParsingExpression {
-        private final ParsingExpression expr;
+    public static class PredicateExpr extends TypedPEG {
+        private final TypedPEG expr;
 
         /**
          * if true, represents and predicate
@@ -166,21 +166,21 @@ public abstract class ParsingExpression {
          */
         private final boolean andPredicate;
 
-        private PredicateExpr(LongRange range, ParsingExpression expr, boolean andPredicate) {
+        private PredicateExpr(LongRange range, TypedPEG expr, boolean andPredicate) {
             super(range);
             this.expr = Objects.requireNonNull(expr);
             this.andPredicate = andPredicate;
         }
 
-        public static PredicateExpr andPredicate(LongRange range, ParsingExpression expr) {
+        public static PredicateExpr andPredicate(LongRange range, TypedPEG expr) {
             return new PredicateExpr(range, expr, true);
         }
 
-        public static PredicateExpr notPredicate(LongRange range, ParsingExpression expr) {
+        public static PredicateExpr notPredicate(LongRange range, TypedPEG expr) {
             return new PredicateExpr(range, expr, false);
         }
 
-        public ParsingExpression getExpr() {
+        public TypedPEG getExpr() {
             return expr;
         }
 
@@ -194,15 +194,15 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class SequenceExpr extends ParsingExpression {
-        private List<ParsingExpression> exprs = new ArrayList<>();
+    public static class SequenceExpr extends TypedPEG {
+        private List<TypedPEG> exprs = new ArrayList<>();
 
         /**
          * if leftExpr or rightExpr is SequenceExpr, merge to exprs.
          * @param leftExpr
          * @param rightExpr
          */
-        public SequenceExpr(ParsingExpression leftExpr, ParsingExpression rightExpr) {
+        public SequenceExpr(TypedPEG leftExpr, TypedPEG rightExpr) {
             super(new LongRange(leftExpr.getRange().pos, rightExpr.getRange().len));
 
             if(leftExpr instanceof SequenceExpr) {
@@ -226,7 +226,7 @@ public abstract class ParsingExpression {
          * @return
          * read only.
          */
-        public List<ParsingExpression> getExprs() {
+        public List<TypedPEG> getExprs() {
             return exprs;
         }
 
@@ -236,10 +236,10 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class ChoiceExpr extends ParsingExpression {
-        private List<ParsingExpression> exprs = new ArrayList<>();
+    public static class ChoiceExpr extends TypedPEG {
+        private List<TypedPEG> exprs = new ArrayList<>();
 
-        public ChoiceExpr(ParsingExpression leftExpr, ParsingExpression rightExpr) {
+        public ChoiceExpr(TypedPEG leftExpr, TypedPEG rightExpr) {
             super(new LongRange(leftExpr.getRange().pos, rightExpr.getRange().len));
 
             if(leftExpr instanceof ChoiceExpr) {
@@ -263,7 +263,7 @@ public abstract class ParsingExpression {
          * @return
          * read only
          */
-        public List<ParsingExpression> getExprs() {
+        public List<TypedPEG> getExprs() {
             return exprs;
         }
 
@@ -273,7 +273,7 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class NonTerminalExpr extends ParsingExpression {
+    public static class NonTerminalExpr extends TypedPEG {
         private final String name;
 
         public NonTerminalExpr(LongRange range, String name) {
@@ -291,11 +291,11 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class LabeledExpr extends ParsingExpression {
+    public static class LabeledExpr extends TypedPEG {
         private final String labelName;
-        private final ParsingExpression expr;
+        private final TypedPEG expr;
 
-        public LabeledExpr(LongRange range, String labelName, ParsingExpression expr) {
+        public LabeledExpr(LongRange range, String labelName, TypedPEG expr) {
             super(range);
             this.labelName = Objects.requireNonNull(labelName);
             this.expr = Objects.requireNonNull(expr);
@@ -305,7 +305,7 @@ public abstract class ParsingExpression {
             return labelName;
         }
 
-        public ParsingExpression getExpr() {
+        public TypedPEG getExpr() {
             return expr;
         }
 
@@ -319,11 +319,11 @@ public abstract class ParsingExpression {
         }
     }
 
-    public static class RuleExpr extends ParsingExpression {
+    public static class RuleExpr extends TypedPEG {
         protected final String ruleName;
-        protected final ParsingExpression expr;
+        protected final TypedPEG expr;
 
-        public RuleExpr(LongRange range, String ruleName, ParsingExpression expr) {
+        public RuleExpr(LongRange range, String ruleName, TypedPEG expr) {
             super(range);
             this.ruleName = ruleName;
             this.expr = expr;
@@ -333,7 +333,7 @@ public abstract class ParsingExpression {
             return ruleName;
         }
 
-        public ParsingExpression getExpr() {
+        public TypedPEG getExpr() {
             return expr;
         }
 
@@ -346,7 +346,7 @@ public abstract class ParsingExpression {
     public static class TypedRuleExpr extends RuleExpr {
         private final String typeName;
 
-        public TypedRuleExpr(LongRange range, String ruleName, String typeName, ParsingExpression expr) {
+        public TypedRuleExpr(LongRange range, String ruleName, String typeName, TypedPEG expr) {
             super(range, ruleName, expr);
             this.typeName = typeName;
         }
@@ -358,6 +358,29 @@ public abstract class ParsingExpression {
         @Override
         public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
             return visitor.visitTypedRuleExpr(this, param);
+        }
+    }
+
+    public static class RootExpr extends TypedPEG {
+        private final List<RuleExpr> exprs;
+
+        public RootExpr(LongRange range, RuleExpr[] exprs) {
+            super(range);
+            this.exprs = Collections.unmodifiableList(Arrays.asList(exprs));
+        }
+
+        /**
+         *
+         * @return
+         * read-only list
+         */
+        public List<RuleExpr> getExprs() {
+            return exprs;
+        }
+
+        @Override
+        public <T, P> T accept(ExpressionVisitor<T, P> visitor, P param) {
+            return visitor.visitRootExpr(this, param);
         }
     }
 }

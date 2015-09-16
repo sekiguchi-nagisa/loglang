@@ -16,7 +16,7 @@ public class PrettyPrinter {
     private int indentLevel = 0;
     private PrintStream stream = System.err;
 
-    public void printPEG(PrintStream stream, ParsingExpression expr) {
+    public void printPEG(PrintStream stream, TypedPEG expr) {
         this.stream = stream != null ? stream : System.err;
         this.print(expr);
         this.stream.println();
@@ -43,7 +43,7 @@ public class PrettyPrinter {
 
     private void print(Object value) {
         TypeMatch.match(value)
-                .when(ParsingExpression.class, (t) -> {
+                .when(TypedPEG.class, (t) -> {
                     this.stream.println("{");
                     this.indentLevel++;
 
