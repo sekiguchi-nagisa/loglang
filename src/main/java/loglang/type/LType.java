@@ -1,7 +1,6 @@
 package loglang.type;
 
 import loglang.misc.Utils;
-import org.objectweb.asm.Type;
 
 import java.util.*;
 
@@ -25,13 +24,6 @@ public class LType implements Comparable<LType> {
     protected final LType superType;
 
     /**
-     * if type is void, 0.
-     * if type is long or double type, 2.
-     * otherwise 1.
-     */
-    protected final int stackConsumption;
-
-    /**
      *
      * @param uniqueName
      * not null
@@ -44,7 +36,6 @@ public class LType implements Comparable<LType> {
         this.uniqueName = Objects.requireNonNull(uniqueName);
         this.internalName = Objects.requireNonNull(internalName);
         this.superType = superType;
-        this.stackConsumption = stackConsumption(this.asType());
     }
 
     public LType(Class<?> clazz, LType superType) {
@@ -52,18 +43,6 @@ public class LType implements Comparable<LType> {
         this.uniqueName = Mangler.mangleBasicType(clazz.getSimpleName());
         this.internalName = clazz.getCanonicalName();
         this.superType = superType;
-        this.stackConsumption = stackConsumption(this.asType());
-    }
-
-    public static int stackConsumption(Type type) {
-        Objects.requireNonNull(type);
-        if(type.equals(Type.VOID_TYPE)) {
-            return 0;
-        }
-        if(type.equals(Type.LONG_TYPE) || type.equals(Type.DOUBLE_TYPE)) {
-            return 2;
-        }
-        return 1;
     }
 
     /**
@@ -87,35 +66,6 @@ public class LType implements Comparable<LType> {
         return superType;
     }
 
-    public final Type asType() {
-        switch(this.internalName) {
-        case "void":
-            return Type.VOID_TYPE;
-        case "boolean":
-            return Type.BOOLEAN_TYPE;
-        case "byte":
-            return Type.BYTE_TYPE;
-        case "char":
-            return Type.CHAR_TYPE;
-        case "short":
-            return Type.SHORT_TYPE;
-        case "int":
-            return Type.INT_TYPE;
-        case "long":
-            return Type.LONG_TYPE;
-        case "float":
-            return Type.FLOAT_TYPE;
-        case "double":
-            return Type.DOUBLE_TYPE;
-        default:
-            return Type.getType( "L" + this.internalName + ";");
-        }
-    }
-
-    public final int stackConsumption() {
-        return this.stackConsumption;
-    }
-
     /**
      * check type inheritence
      * @param type
@@ -128,7 +78,7 @@ public class LType implements Comparable<LType> {
     }
 
     public final boolean isVoid() {
-        return this.stackConsumption == 0;
+        return this.equals(voidType);
     }
 
     /**
@@ -140,34 +90,6 @@ public class LType implements Comparable<LType> {
      */
     public MemberRef.FieldRef lookupField(String fieldName) {
         return null;
-    }
-
-    public List<MemberRef.FieldRef> findAllFields() {
-        return Collections.emptyList();
-    }
-
-    /**
-     *
-     * @param methodName
-     * not null
-     * @return
-     * if not found, return null
-     */
-    public MemberRef.MethodRef lookupMethod(String methodName) {
-        return null;
-    }
-
-    public List<MemberRef> findAllMethods() {
-        return Collections.emptyList();
-    }
-
-    /**
-     *
-     * @return
-     * if not found, return null
-     */
-    public MemberRef.ConstructorRef lookupConstructor() {
-        return (MemberRef.ConstructorRef) this.lookupMethod("<init>");
     }
 
     @Override
@@ -314,15 +236,6 @@ public class LType implements Comparable<LType> {
         @Override
         public MemberRef.FieldRef lookupField(String fieldName) {
             return this.fieldMap.get(fieldName);
-        }
-
-        @Override
-        public List<MemberRef.FieldRef> findAllFields() {
-            ArrayList<MemberRef.FieldRef> list = new ArrayList<>(this.fieldMap.size());
-            for(MemberRef.FieldRef ref : this.fieldMap.values()) {
-                list.add(ref);
-            }
-            return list;
         }
     }
 

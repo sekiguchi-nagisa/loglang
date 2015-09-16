@@ -5,6 +5,7 @@ import static loglang.Node.*;
 import loglang.*;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
+import loglang.type.LTypes;
 import loglang.type.MemberRef;
 import nez.ast.CommonTree;
 import org.objectweb.asm.Label;
@@ -51,7 +52,7 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         // generate state (field)
         for(StateDeclNode child : caseNode.getStateDeclNodes()) {
             cw.visitField(ACC_PUBLIC, child.getName(),
-                    child.getInitValueNode().getType().asType().getDescriptor(),
+                    LTypes.asType(child.getInitValueNode().getType()).getDescriptor(),
                     null, null);
         }
 
@@ -64,7 +65,7 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         for(StateDeclNode child : caseNode.getStateDeclNodes()) {
             this.visit(child.getInitValueNode(), adapter);
             adapter.putField(Type.getType("L" + className + ";"), child.getName(),
-                    child.getInitValueNode().getType().asType());
+                    LTypes.asType(child.getInitValueNode().getType()));
         }
         adapter.returnValue();
         adapter.endMethod();
@@ -129,14 +130,14 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
     @Override
     public Void visitVarDeclNode(VarDeclNode node, GeneratorAdapter param) {
         this.visit(node.getInitValueNode(), param);
-        Type desc = node.getEntry().getFieldType().asType();
+        Type desc = LTypes.asType(node.getEntry().getFieldType());
         param.visitVarInsn(desc.getOpcode(ISTORE), node.getEntry().getIndex());
         return null;
     }
 
     @Override
     public Void visitVarNode(VarNode node, GeneratorAdapter param) {
-        Type desc = node.getEntry().getFieldType().asType();
+        Type desc = LTypes.asType(node.getEntry().getFieldType());
         if(Utils.hasFlag(node.getEntry().getAttribute(), MemberRef.LOCAL_VAR)) {
             param.visitVarInsn(desc.getOpcode(ILOAD), node.getEntry().getIndex());
         } else {
@@ -150,7 +151,7 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         this.visit(node.getExprNode(), param);
 
         // pop stack top
-        switch(node.getExprNode().getType().stackConsumption()) {
+        switch(LTypes.stackConsumption(node.getExprNode().getType())) {
         case 1:
             param.pop();
             break;

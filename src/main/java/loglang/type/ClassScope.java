@@ -158,7 +158,7 @@ public class ClassScope {
 
             FieldRef entry = new FieldRef(this.curIndex, type, name, ownerType, attribute);
             this.entryMap.put(name, entry);
-            this.curIndex += type.stackConsumption();
+            this.curIndex += LTypes.stackConsumption(type);
             return entry;
         }
     }
