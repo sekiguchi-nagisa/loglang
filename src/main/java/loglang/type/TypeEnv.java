@@ -2,9 +2,8 @@ package loglang.type;
 
 import java.util.*;
 
-import static loglang.TypeException.*;
+import static loglang.type.TypeException.*;
 
-import loglang.TypeException;
 import loglang.misc.Utils;
 import loglang.type.LType.*;
 
@@ -238,8 +237,8 @@ public class TypeEnv {
      * @throws TypeException
      * if already defined.
      */
-    public void defineField(StructureType type, String fieldName, LType fieldType) throws TypeException {
-        if(type.addField(fieldName, fieldType) == null) {
+    public void defineField(AbstractStructureType type, String fieldName, LType fieldType) throws TypeException {
+        if(!type.addField(fieldName, fieldType)) {
             typeError("already undefined field: " + fieldName + ", in " + type.getSimpleName());
         }
     }

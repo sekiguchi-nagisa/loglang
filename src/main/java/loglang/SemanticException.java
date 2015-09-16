@@ -1,6 +1,7 @@
 package loglang;
 
 import loglang.misc.LongRange;
+import loglang.type.TypeException;
 
 import java.util.Objects;
 

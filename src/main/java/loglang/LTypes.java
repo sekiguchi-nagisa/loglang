@@ -1,5 +1,6 @@
-package loglang.type;
+package loglang;
 
+import loglang.type.LType;
 import org.objectweb.asm.Type;
 
 import java.util.Objects;

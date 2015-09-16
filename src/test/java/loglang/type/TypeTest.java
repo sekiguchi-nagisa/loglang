@@ -1,6 +1,5 @@
 package loglang.type;
 
-import loglang.TypeException;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,9 +1,11 @@
-package loglang.type;
+package loglang;
 
-import loglang.TypeException;
+import loglang.type.LType;
+import loglang.type.TypeEnv;
+import loglang.type.TypeException;
 
 import java.util.*;
-import static loglang.TypeException.*;
+import static loglang.type.TypeException.*;
 
 /**
  * Created by skgchxngsxyz-opensuse on 15/09/02.

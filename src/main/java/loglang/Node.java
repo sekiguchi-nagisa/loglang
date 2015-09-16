@@ -2,7 +2,7 @@ package loglang;
 
 import loglang.misc.LongRange;
 import loglang.type.LType;
-import loglang.type.MemberRef;
+import loglang.symbol.MemberRef;
 
 import java.util.ArrayList;
 import java.util.List;

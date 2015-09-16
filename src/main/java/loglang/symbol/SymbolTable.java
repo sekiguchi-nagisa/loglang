@@ -1,6 +1,8 @@
-package loglang.type;
+package loglang.symbol;
 
-import loglang.TypeException;
+import loglang.symbol.ClassScope;
+import loglang.type.TypeEnv;
+import loglang.type.TypeException;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,7 +1,10 @@
-package loglang.type;
+package loglang.symbol;
 
 import loglang.misc.Utils;
-import static loglang.type.MemberRef.*;
+import loglang.type.LType;
+import loglang.LTypes;
+
+import static loglang.symbol.MemberRef.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,12 +15,21 @@ import java.util.Objects;
  * for local variable and instance field management
  */
 public class ClassScope {
-    private final LType.AbstractStructureType type;
+    /**
+     * owner of class scope
+     */
+    private final LType.AbstractStructureType ownerType;
+
+    private final Map<String, FieldRef> fieldMap = new HashMap<>();
     private final ArrayList<Scope> scopes = new ArrayList<>();
     private final ArrayList<Integer> indexCounters = new ArrayList<>();
 
-    ClassScope(LType.AbstractStructureType type) {
-        this.type = Objects.requireNonNull(type);
+    ClassScope(LType.AbstractStructureType ownerType) {
+        this.ownerType = Objects.requireNonNull(ownerType);
+    }
+
+    public LType.AbstractStructureType getOwnerType() {
+        return this.ownerType;
     }
 
     /**
@@ -46,7 +58,7 @@ public class ClassScope {
     }
 
     private FieldRef findField(String fieldName) {
-        return this.type.lookupField(fieldName);
+        return this.fieldMap.get(fieldName);
     }
 
     /**
@@ -119,7 +131,19 @@ public class ClassScope {
      * if entry creation failed(found duplicated entry), return null.
      */
     public FieldRef newStateEntry(String symbolName, LType type, boolean readOnly) {
-        return this.type.addField(symbolName, type);    //FIXME: read-only
+        Objects.requireNonNull(symbolName); //FIXME: read only field
+        Objects.requireNonNull(type);
+
+        if(this.fieldMap.containsKey(symbolName)) {
+            return null;
+        }
+
+        final int fieldIndex = -1;
+        final int attribute = MemberRef.INSTANCE_FIELD;
+
+        MemberRef.FieldRef ref = new MemberRef.FieldRef(fieldIndex, type, symbolName, ownerType, attribute);
+        this.fieldMap.put(symbolName, ref);
+        return ref;
     }
 
 

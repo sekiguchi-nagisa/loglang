@@ -1,5 +1,7 @@
-package loglang.type;
+package loglang.symbol;
 
+import loglang.type.LType;
+import loglang.LTypes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 

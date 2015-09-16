@@ -1,5 +1,8 @@
 package loglang;
 
+import loglang.symbol.ClassScope;
+import loglang.symbol.MemberRef;
+import loglang.symbol.SymbolTable;
 import loglang.type.*;
 
 import java.util.Objects;

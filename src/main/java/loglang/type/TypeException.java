@@ -1,4 +1,4 @@
-package loglang;
+package loglang.type;
 
 /**
  * Created by skgchxngsxyz-osx on 15/09/03.

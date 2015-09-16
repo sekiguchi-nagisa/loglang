@@ -1,7 +1,7 @@
 package loglang.peg;
 
 import loglang.SemanticException;
-import loglang.TypeException;
+import loglang.type.TypeException;
 import loglang.type.LType;
 import loglang.type.TypeEnv;
 
