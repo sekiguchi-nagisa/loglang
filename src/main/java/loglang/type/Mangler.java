@@ -133,20 +133,19 @@ public class Mangler {
         char ch = mangledName.charAt(index);
         switch(ch) {
         case 'B': { // basic type
-            int len = mangledName.charAt(++index) - '0';
-            index++;
-            sb.append(mangledName, index, index += len);
+            int[] len = new int[1];
+            index = demangleNumber(mangledName, ++index, len);
+            sb.append(mangledName, index, index += len[0]);
             return index;
         }
         case 'C': { // composed type
-            int len = mangledName.charAt(++index) - '0';
-            index++;
-            sb.append(mangledName, index, index += len);
+            int[] len = new int[1];
+            index = demangleNumber(mangledName, ++index, len);
+            sb.append(mangledName, index, index += len[0]);
             sb.append("<");
 
-            len = mangledName.charAt(++index) - '0';    //skip 'E'
-            index++;
-            for(int i = 0; i < len; i++) {
+            index = demangleNumber(mangledName, ++index, len);  //skip 'E'
+            for(int i = 0; i < len[0]; i++) {
                 if(i > 0) {
                     sb.append(",");
                 }
@@ -159,5 +158,30 @@ public class Mangler {
             Utils.fatal("illegal char: " + ch + " at " + mangledName);
         }
         return 0;
+    }
+
+    /**
+     *
+     * @param mangledName
+     * @param index
+     * @param result
+     * for demangled result.
+     * must be 1 length array.
+     * @return
+     * index of next character
+     */
+    private static int demangleNumber(final String mangledName, int index, final int[] result) {
+        final int size = mangledName.length();
+        StringBuilder sb = new StringBuilder();
+        for(; index < size; index++) {
+            char ch = mangledName.charAt(index);
+            if(Character.isDigit(ch)) {
+                sb.append(ch);
+            } else {
+                break;
+            }
+        }
+        result[0] = Integer.parseInt(sb.toString());
+        return index;
     }
 }
