@@ -4,9 +4,9 @@ import loglang.jvm.ByteCodeGenerator;
 import loglang.jvm.ByteCodeLoader;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
+import nez.Grammar;
 import nez.ast.Source;
 import nez.ast.Tree;
-import nez.lang.Grammar;
 import nez.peg.tpeg.SemanticException;
 import nez.peg.tpeg.TypedPEG;
 import nez.peg.tpeg.type.TypeEnv;
@@ -30,7 +30,7 @@ public class LoglangFactory {
         Tree<?> matcherTree = getAndCheckTag(scriptTree, 2, "Match");
 
         List<Tree<?>> caseTrees = this.getCaseTrees(matcherTree);
-        Grammar patternGrammar = this.newPatternGrammar(env, patternTree, prefixTree, caseTrees);
+//        Grammar patternGrammar = this.newPatternGrammar(env, patternTree, prefixTree, caseTrees);
 
         if(Config.pegOnly) {
             System.out.println("+++ peg only +++");
@@ -50,7 +50,8 @@ public class LoglangFactory {
             loader.definedAndLoadClass(pair.getLeft(), pair.getRight());
         }
 
-        return new Loglang(patternGrammar, caseTrees.size());
+//        return new Loglang(patternGrammar, caseTrees.size());
+        return null;
     }
 
     /**

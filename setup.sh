@@ -17,6 +17,7 @@ git submodule update --init
 
 # build Nez
 cd ./external/nez
+ant clean
 ant
 ant nez-core
 

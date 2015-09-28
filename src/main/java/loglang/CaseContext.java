@@ -1,6 +1,6 @@
 package loglang;
 
-import nez.ast.CommonTree;
+import nez.ast.Tree;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/14.
@@ -13,5 +13,5 @@ public interface CaseContext {
      * may be null if has no  prefix
      * @param bodyTree
      */
-    void invoke(CommonTree prefixTree, CommonTree bodyTree);
+    void invoke(Tree<?> prefixTree, Tree<?> bodyTree);
 }

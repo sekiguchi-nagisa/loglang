@@ -1,9 +1,8 @@
 package loglang;
 
 import loglang.misc.Utils;
-import nez.SourceContext;
-import nez.ast.CommonTree;
-import nez.lang.Grammar;
+import nez.Grammar;
+import nez.io.SourceContext;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -45,28 +44,28 @@ public class Loglang {
         }
     }
 
-    public void invoke(SourceContext inputSource) {
-        Objects.requireNonNull(inputSource);
-        while(inputSource.hasUnconsumed()) {
-            CommonTree result = this.patternGrammar.parseCommonTree(inputSource);
-            if(result == null) {
-                System.err.println("not match");
-                System.exit(1);
-            }
-
-            CommonTree prefixTreeWrapper = result.get(0);
-            CommonTree caseTreeWrapper = result.get(1);
-
-            String tagName = caseTreeWrapper.getTag().getSymbol();
-            int id = Integer.parseInt(tagName);
-
-            System.out.println("matched: " + tagName);
-            this.cases[id].invoke(
-                    prefixTreeWrapper.isEmpty() ? null : prefixTreeWrapper.get(0),
-                    caseTreeWrapper.get(0)
-            );
-
-            System.out.println();
-        }
+    public void invoke(SourceContext inputSource) { //FIXME
+//        Objects.requireNonNull(inputSource);
+//        while(inputSource.hasUnconsumed()) {
+//            Tree<?> result = this.patternGrammar.parseCommonTree(inputSource);
+//            if(result == null) {
+//                System.err.println("not match");
+//                System.exit(1);
+//            }
+//
+//            Tree<?> prefixTreeWrapper = result.get(0);
+//            Tree<?> caseTreeWrapper = result.get(1);
+//
+//            String tagName = caseTreeWrapper.getTag().getSymbol();
+//            int id = Integer.parseInt(tagName);
+//
+//            System.out.println("matched: " + tagName);
+//            this.cases[id].invoke(
+//                    prefixTreeWrapper.isEmpty() ? null : prefixTreeWrapper.get(0),
+//                    caseTreeWrapper.get(0)
+//            );
+//
+//            System.out.println();
+//        }
     }
 }
