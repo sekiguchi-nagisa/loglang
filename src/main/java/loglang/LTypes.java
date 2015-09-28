@@ -1,6 +1,6 @@
 package loglang;
 
-import loglang.type.LType;
+import nez.peg.tpeg.type.LType;
 import org.objectweb.asm.Type;
 
 import java.util.Objects;

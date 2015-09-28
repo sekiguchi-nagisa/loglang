@@ -4,21 +4,13 @@ import loglang.jvm.ByteCodeGenerator;
 import loglang.jvm.ByteCodeLoader;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
-import loglang.peg.*;
-import loglang.type.TypeEnv;
-import nez.NezOption;
-import nez.SourceContext;
-import nez.ast.CommonTree;
 import nez.ast.Source;
-import nez.ast.Tag;
+import nez.ast.Tree;
 import nez.lang.Grammar;
-import nez.lang.GrammarFile;
+import nez.peg.tpeg.SemanticException;
+import nez.peg.tpeg.TypedPEG;
+import nez.peg.tpeg.type.TypeEnv;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,12 +24,12 @@ public class LoglangFactory {
     public Loglang newLoglang(String scriptName) {
         TypeEnv env = new TypeEnv();
 
-        CommonTree scriptTree = this.newScriptTree(scriptName);
-        CommonTree patternTree = getAndCheckTag(scriptTree, 0, "PatternDefinition");
-        CommonTree prefixTree = getAndCheckTag(scriptTree, 1, "PrefixDefinition");
-        CommonTree matcherTree = getAndCheckTag(scriptTree, 2, "Match");
+        Tree<?> scriptTree = this.newScriptTree(scriptName);
+        Tree<?> patternTree = getAndCheckTag(scriptTree, 0, "PatternDefinition");
+        Tree<?> prefixTree = getAndCheckTag(scriptTree, 1, "PrefixDefinition");
+        Tree<?> matcherTree = getAndCheckTag(scriptTree, 2, "Match");
 
-        List<CommonTree> caseTrees = this.getCaseTrees(matcherTree);
+        List<Tree<?>> caseTrees = this.getCaseTrees(matcherTree);
         Grammar patternGrammar = this.newPatternGrammar(env, patternTree, prefixTree, caseTrees);
 
         if(Config.pegOnly) {
@@ -66,52 +58,56 @@ public class LoglangFactory {
      * @param scriptName
      * @return
      */
-    private CommonTree newScriptTree(String scriptName) {
-        // parse script
-        GrammarFile gf = null;
-        try {
-            gf = GrammarFile.loadNezFile(grammarFileName, NezOption.newDefaultOption());
-        } catch(IOException e) {
-            System.err.println("cannot load file: loglang.nez");
-            System.exit(1);
-        }
-        Grammar g = gf.newGrammar("File");
+    private Tree<?> newScriptTree(String scriptName) {   //FIXME:
+//        // parse script
+//        GrammarFile gf = null;
+//        try {
+//            gf = GrammarFile.loadNezFile(grammarFileName, NezOption.newDefaultOption());
+//        } catch(IOException e) {
+//            System.err.println("cannot load file: loglang.nez");
+//            System.exit(1);
+//        }
+//        Grammar g = gf.newGrammar("File");
+//
+//        SourceContext src = null;
+//        try {
+//            src = SourceContext.newFileContext(scriptName);
+//        } catch(IOException e) {
+//            System.err.println("cannot load file: " + scriptName);
+//            System.exit(1);
+//        }
+//
+//        CommonTree tree = g.parseCommonTree(src);
+//        if(tree == null) {
+//            System.err.println(src.getSyntaxErrorMessage());
+//            System.exit(1);
+//        }
+//        if(src.hasUnconsumed()) {
+//            System.err.println(src.getUnconsumedMessage());
+//            System.exit(1);
+//        }
+//        return tree;
 
-        SourceContext src = null;
-        try {
-            src = SourceContext.newFileContext(scriptName);
-        } catch(IOException e) {
-            System.err.println("cannot load file: " + scriptName);
-            System.exit(1);
-        }
-
-        CommonTree tree = g.parseCommonTree(src);
-        if(tree == null) {
-            System.err.println(src.getSyntaxErrorMessage());
-            System.exit(1);
-        }
-        if(src.hasUnconsumed()) {
-            System.err.println(src.getUnconsumedMessage());
-            System.exit(1);
-        }
-        return tree;
+        return null;
     }
 
-    private List<CommonTree> getCaseTrees(CommonTree matcherTree) {
-        ArrayList<CommonTree> caseTrees = new ArrayList<>();
-        for(CommonTree caseTree : matcherTree) {
+    private List<Tree<?>> getCaseTrees(Tree<?> matcherTree) {
+        ArrayList<Tree<?>> caseTrees = new ArrayList<>();
+        for(Tree<?> caseTree : matcherTree) {
             caseTrees.add(caseTree.get(0));
         }
         return caseTrees;
     }
 
-    private List<TypedPEG.RuleExpr> createRuleExprs(CommonTree patternTree) {
-        Tree2ExprTranslator translator = new Tree2ExprTranslator();
-        List<TypedPEG.RuleExpr> ruleExprs = new ArrayList<>();
-        for(CommonTree ruleTree : patternTree) {
-            ruleExprs.add((TypedPEG.RuleExpr) translator.translate(ruleTree));
-        }
-        return ruleExprs;
+    private List<TypedPEG.RuleExpr> createRuleExprs(Tree<?> patternTree) {  //FIXME:
+//        Tree2ExprTranslator translator = new Tree2ExprTranslator();
+//        List<TypedPEG.RuleExpr> ruleExprs = new ArrayList<>();
+//        for(Tree<?> ruleTree : patternTree) {
+//            ruleExprs.add((TypedPEG.RuleExpr) translator.translate(ruleTree));
+//        }
+//        return ruleExprs;
+
+        return null;
     }
 
     /**
@@ -120,30 +116,33 @@ public class LoglangFactory {
      * @return
      * empty or singleton list
      */
-    private List<TypedPEG.RuleExpr> createPrefixExpr(CommonTree prefixTree) {
+    private List<TypedPEG.RuleExpr> createPrefixExpr(Tree<?> prefixTree) {  //FIXME:
         if(prefixTree.isEmpty()) {
             return Collections.emptyList();
         }
-        TypedPEG expr = new Tree2ExprTranslator().translate(prefixTree.get(0));
-        String name = TypeEnv.getAnonymousPrefixTypeName();
-        return Collections.singletonList(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
+//        TypedPEG expr = new Tree2ExprTranslator().translate(prefixTree.get(0));
+//        String name = TypeEnv.getAnonymousPrefixTypeName();
+//        return Collections.singletonList(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
+        return null;
     }
 
-    private List<TypedPEG.RuleExpr> createCaseExprs(List<CommonTree> caseTrees) {
-        Tree2ExprTranslator translator = new Tree2ExprTranslator();
-        List<TypedPEG.RuleExpr> casePatterns = new ArrayList<>();
-        for(int i = 0; i < caseTrees.size(); i++) {
-            String name = TypeEnv.createAnonymousCaseTypeName(i);
-            TypedPEG expr = translator.translate(caseTrees.get(i));
-            casePatterns.add(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
-        }
-        return casePatterns;
+    private List<TypedPEG.RuleExpr> createCaseExprs(List<Tree<?>> caseTrees) {  //FIXME:
+//        Tree2ExprTranslator translator = new Tree2ExprTranslator();
+//        List<TypedPEG.RuleExpr> casePatterns = new ArrayList<>();
+//        for(int i = 0; i < caseTrees.size(); i++) {
+//            String name = TypeEnv.createAnonymousCaseTypeName(i);
+//            TypedPEG expr = translator.translate(caseTrees.get(i));
+//            casePatterns.add(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
+//        }
+//        return casePatterns;
+
+        return null;
     }
 
     private void dumpPattern(List<TypedPEG.RuleExpr> ruleExprs,
                              List<TypedPEG.RuleExpr> prefixExpr,
                              List<TypedPEG.RuleExpr> caseExprs) {
-        PrettyPrinter printer = new PrettyPrinter();
+        TypedPEGPrettyPrinter printer = new TypedPEGPrettyPrinter();
 
         System.err.println("@@ dump Rule @@");
         ruleExprs.stream().forEach((t) -> printer.printPEG(System.err, t));
@@ -165,62 +164,62 @@ public class LoglangFactory {
      * @param caseTrees
      * @return
      */
-    private Grammar newPatternGrammar(TypeEnv env, CommonTree patternTree,
-                                      CommonTree prefixTree, List<CommonTree> caseTrees) {
-        List<TypedPEG.RuleExpr> ruleExprs = this.createRuleExprs(patternTree);
-        List<TypedPEG.RuleExpr> prefixExpr = this.createPrefixExpr(prefixTree);
-        List<TypedPEG.RuleExpr> caseExprs = this.createCaseExprs(caseTrees);
+    private Grammar newPatternGrammar(TypeEnv env, Tree<?> patternTree,
+                                      Tree<?> prefixTree, List<Tree<?>> caseTrees) {
+//        List<TypedPEG.RuleExpr> ruleExprs = this.createRuleExprs(patternTree);
+//        List<TypedPEG.RuleExpr> prefixExpr = this.createPrefixExpr(prefixTree);
+//        List<TypedPEG.RuleExpr> caseExprs = this.createCaseExprs(caseTrees);
+//
+//        if(Config.dumpPEG) {
+//            System.err.println("++++ dump PEG ++++");
+//            this.dumpPattern(ruleExprs, prefixExpr, caseExprs);
+//        }
+//
+//        // check type
+//        try {
+//            ExprTypeChecker checker = new ExprTypeChecker(env);
+//
+//            checker.checkType(ruleExprs);
+//            checker.checkType(prefixExpr);
+//            checker.checkType(caseExprs);
+//        } catch(Exception e) {
+//            reportErrorAndExit(patternTree.getSource(), e);
+//        }
+//
+//        if(Config.dumpTypedPEG) {
+//            System.err.println("++++ dump typed PEG ++++");
+//            this.dumpPattern(ruleExprs, prefixExpr, caseExprs);
+//        }
+//
+//        try {
+//            Path path = Files.createTempFile("ll_pattern", ".nez");
+//            try(PrintStream stream = new PrintStream(path.toFile())) {
+//                new NezGrammarGenerator(stream).generate(ruleExprs, prefixExpr, caseExprs);
+//            } catch(Exception e) {
+//                Utils.propagate(e);
+//            }
+//
+//            String pathName = path.toString();
+//
+//            // delete pattern file before shutdown
+//            if(Config.dumpPattern) {
+//                System.err.println("@@@@ Dump Pattern File: " + pathName + " @@@@");
+//            } else {
+//                Runtime.getRuntime().addShutdownHook(
+//                        new Thread(() -> new File(pathName).delete())
+//                );
+//            }
 
-        if(Config.dumpPEG) {
-            System.err.println("++++ dump PEG ++++");
-            this.dumpPattern(ruleExprs, prefixExpr, caseExprs);
-        }
-
-        // check type
-        try {
-            ExprTypeChecker checker = new ExprTypeChecker(env);
-
-            checker.checkType(ruleExprs);
-            checker.checkType(prefixExpr);
-            checker.checkType(caseExprs);
-        } catch(Exception e) {
-            reportErrorAndExit(patternTree.getSource(), e);
-        }
-
-        if(Config.dumpTypedPEG) {
-            System.err.println("++++ dump typed PEG ++++");
-            this.dumpPattern(ruleExprs, prefixExpr, caseExprs);
-        }
-
-        try {
-            Path path = Files.createTempFile("ll_pattern", ".nez");
-            try(PrintStream stream = new PrintStream(path.toFile())) {
-                new NezGrammarGenerator(stream).generate(ruleExprs, prefixExpr, caseExprs);
-            } catch(Exception e) {
-                Utils.propagate(e);
-            }
-
-            String pathName = path.toString();
-
-            // delete pattern file before shutdown
-            if(Config.dumpPattern) {
-                System.err.println("@@@@ Dump Pattern File: " + pathName + " @@@@");
-            } else {
-                Runtime.getRuntime().addShutdownHook(
-                        new Thread(() -> new File(pathName).delete())
-                );
-            }
-
-            return GrammarFile.loadGrammarFile(pathName, NezOption.newDefaultOption()).newGrammar("File");
-        } catch(IOException e) {
-            Utils.propagate(e);
-        }
+//            return GrammarFile.loadGrammarFile(pathName, NezOption.newDefaultOption()).newGrammar("File");    //FIXME;
+//        } catch(IOException e) {
+//            Utils.propagate(e);
+//        }
         return null;
     }
 
-    private static CommonTree getAndCheckTag(CommonTree tree, int index, String tagName) {
-        CommonTree child = tree.get(index);
-        assert child.is(Tag.tag(tagName));
+    private static Tree<?> getAndCheckTag(Tree<?> tree, int index, String tagName) {
+        Tree<?> child = tree.get(index);
+//        assert child.is(Tag.tag(tagName));    //FIXME:
         return child;
     }
 

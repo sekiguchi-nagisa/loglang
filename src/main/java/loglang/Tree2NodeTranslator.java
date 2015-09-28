@@ -1,9 +1,8 @@
 package loglang;
 
 import static loglang.Node.*;
-import static nez.ast.ASTHelper.*;
 
-import nez.ast.CommonTree;
+import nez.ast.Tree;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/18.
@@ -11,7 +10,7 @@ import nez.ast.CommonTree;
 public class Tree2NodeTranslator extends TreeTranslator<Node> {{
     this.add("Match", (t) -> {  // entry point
         RootNode node = new RootNode(range(t));
-        for(CommonTree child : t) {
+        for(Tree<?> child : t) {
             node.addCaseNode((CaseNode) this.translate(child));
         }
         return node;
@@ -25,12 +24,12 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
 
         CaseNode caseNode = new CaseNode(range(t), null); //FIXME: label
         // state decl
-        for(CommonTree child : t.get(0)) {
+        for(Tree<?> child : t.get(0)) {
             caseNode.addStateDeclNode((StateDeclNode) this.translate(child));
         }
 
         // block
-        for(CommonTree child : t.get(1)) {
+        for(Tree<?> child : t.get(1)) {
             caseNode.addStmtNode(this.translate(child));
         }
 
@@ -40,12 +39,12 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
 
 
     this.add("Integer", (t) -> {
-        int value = Integer.parseInt(t.getText());
+        int value = Integer.parseInt(t.toText());
         return new IntLiteralNode(range(t), value);
     });
 
     this.add("Float", (t) -> {
-        float value = Float.parseFloat(t.getText());
+        float value = Float.parseFloat(t.toText());
         return new FloatLiteralNode(range(t), value);
     });
 
@@ -53,7 +52,7 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
     this.add("False", (t) -> new BoolLiteralNode(range(t), false));
 
     this.add("String", (t) -> {
-        String src = t.getText();
+        String src = t.toText();
         boolean dquote = src.charAt(0) == '"';
         StringBuilder sb = new StringBuilder();
         final int size = src.length() - 1;
@@ -99,18 +98,18 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
         return new StringLiteralNode(range(t), sb.toString());
     });
 
-    this.add("Variable", (t) -> new VarNode(range(t), t.getText()));
+    this.add("Variable", (t) -> new VarNode(range(t), t.toText()));
 
     this.add("State", (t) -> {
         assert t.size() == 2;
-        String name = t.get(0).getText();
+        String name = t.get(0).toText();
         Node initValueNode = this.translate(t.get(1));
         return new StateDeclNode(range(t), name, initValueNode);
     });
 
     this.add("VarDecl", (t) -> {
         assert t.size() == 2;
-        String name = t.get(0).getText();
+        String name = t.get(0).toText();
         Node initValueNode = this.translate(t.get(1));
         return new VarDeclNode(range(t), name, initValueNode);
     });

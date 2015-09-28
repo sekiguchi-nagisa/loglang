@@ -1,7 +1,8 @@
-package loglang.peg;
+package loglang;
 
 import loglang.misc.TypeMatch;
 import loglang.misc.Utils;
+import nez.peg.tpeg.TypedPEG;
 
 import java.io.PrintStream;
 import java.lang.reflect.Field;
@@ -12,7 +13,7 @@ import java.util.List;
 /**
  * Created by skgchxngsxyz-osx on 15/08/31.
  */
-public class PrettyPrinter {
+public class TypedPEGPrettyPrinter {
     private int indentLevel = 0;
     private PrintStream stream = System.err;
 

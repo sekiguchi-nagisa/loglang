@@ -25,10 +25,10 @@ public class Loglang {
         for(int i = 0; i < caseNum; i++) {
             this.cases[i] = (p, a) -> {
                 if(p != null) {
-                    System.out.print(p.getText());
+                    System.out.print(p.toText());
                     System.out.print(" ");
                 }
-                System.out.println(a.getText());
+                System.out.println(a.toText());
             };
         }
     }
@@ -57,7 +57,7 @@ public class Loglang {
             CommonTree prefixTreeWrapper = result.get(0);
             CommonTree caseTreeWrapper = result.get(1);
 
-            String tagName = caseTreeWrapper.getTag().getName();
+            String tagName = caseTreeWrapper.getTag().getSymbol();
             int id = Integer.parseInt(tagName);
 
             System.out.println("matched: " + tagName);

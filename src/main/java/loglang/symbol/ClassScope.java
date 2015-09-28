@@ -1,8 +1,8 @@
 package loglang.symbol;
 
 import loglang.misc.Utils;
-import loglang.type.LType;
 import loglang.LTypes;
+import nez.peg.tpeg.type.LType;
 
 import static loglang.symbol.MemberRef.*;
 

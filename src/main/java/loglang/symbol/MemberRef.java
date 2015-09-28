@@ -1,7 +1,7 @@
 package loglang.symbol;
 
-import loglang.type.LType;
 import loglang.LTypes;
+import nez.peg.tpeg.type.LType;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 

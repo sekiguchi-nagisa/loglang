@@ -1,11 +1,11 @@
 package loglang;
 
-import loglang.type.LType;
-import loglang.type.TypeEnv;
-import loglang.type.TypeException;
+import nez.peg.tpeg.type.LType;
+import nez.peg.tpeg.type.TypeEnv;
+import nez.peg.tpeg.type.TypeException;
 
 import java.util.*;
-import static loglang.type.TypeException.*;
+import static nez.peg.tpeg.type.TypeException.*;
 
 /**
  * Created by skgchxngsxyz-opensuse on 15/09/02.

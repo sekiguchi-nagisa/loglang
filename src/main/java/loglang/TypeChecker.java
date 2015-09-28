@@ -3,12 +3,15 @@ package loglang;
 import loglang.symbol.ClassScope;
 import loglang.symbol.MemberRef;
 import loglang.symbol.SymbolTable;
-import loglang.type.*;
+import nez.peg.tpeg.SemanticException;
+import nez.peg.tpeg.type.LType;
+import nez.peg.tpeg.type.TypeEnv;
+import nez.peg.tpeg.type.TypeException;
 
 import java.util.Objects;
 
 import static loglang.Node.*;
-import static loglang.SemanticException.*;
+import static nez.peg.tpeg.SemanticException.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/18.

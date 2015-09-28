@@ -1,7 +1,8 @@
 package loglang;
 
 import loglang.misc.Utils;
-import nez.ast.CommonTree;
+import nez.ast.Tree;
+import nez.peg.tpeg.LongRange;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +20,8 @@ public abstract class TreeTranslator<R> {
         }
     }
 
-    public R translate(CommonTree tree) {
-        String key = tree.getTag().getName();
+    public R translate(Tree<?> tree) {
+        String key = tree.getTag().getSymbol();
         TagHandler<R> handler = this.handlerMap.get(key);
         if(Objects.isNull(handler)) {
             Utils.fatal("undefined handler: " + key);
@@ -35,6 +36,10 @@ public abstract class TreeTranslator<R> {
 
     @FunctionalInterface
     public interface TagHandler<T> {
-        T invoke(CommonTree tree) throws Exception;
+        T invoke(Tree<?> tree) throws Exception;
+    }
+
+    public static LongRange range(Tree<?> tree) {
+        return new LongRange(tree.getSourcePosition(), tree.getLength());
     }
 }

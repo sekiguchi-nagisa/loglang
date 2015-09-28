@@ -1,5 +1,9 @@
 package loglang.type;
 
+import nez.peg.tpeg.type.LType;
+import nez.peg.tpeg.type.Mangler;
+import nez.peg.tpeg.type.TypeEnv;
+import nez.peg.tpeg.type.TypeException;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,12 +1,9 @@
 package loglang.symbol;
 
 import loglang.misc.Utils;
-import loglang.symbol.ClassScope;
-import loglang.symbol.MemberRef;
-import loglang.symbol.SymbolTable;
-import loglang.type.LType;
-import loglang.type.TypeEnv;
-import loglang.type.TypeException;
+import nez.peg.tpeg.type.LType;
+import nez.peg.tpeg.type.TypeEnv;
+import nez.peg.tpeg.type.TypeException;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

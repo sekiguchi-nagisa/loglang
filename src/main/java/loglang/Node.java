@@ -1,8 +1,8 @@
 package loglang;
 
-import loglang.misc.LongRange;
-import loglang.type.LType;
 import loglang.symbol.MemberRef;
+import nez.peg.tpeg.LongRange;
+import nez.peg.tpeg.type.LType;
 
 import java.util.ArrayList;
 import java.util.List;

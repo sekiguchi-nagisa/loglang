@@ -1,8 +1,7 @@
 package loglang.symbol;
 
-import loglang.symbol.ClassScope;
-import loglang.type.TypeEnv;
-import loglang.type.TypeException;
+import nez.peg.tpeg.type.TypeEnv;
+import nez.peg.tpeg.type.TypeException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
