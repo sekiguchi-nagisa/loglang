@@ -1,0 +1,28 @@
+diff --git a/src/nez/peg/tpeg/type/TypeEnv.java b/src/nez/peg/tpeg/type/TypeEnv.java
+index 4a32392..86300b3 100644
+--- a/src/nez/peg/tpeg/type/TypeEnv.java
++++ b/src/nez/peg/tpeg/type/TypeEnv.java
+@@ -31,7 +31,7 @@ public class TypeEnv {
+ 	private LType boolType;
+ 	private LType stringType;
+ 
+-	public TypeEnv() {
++	TypeEnv() { // not call it directory
+ 
+ 		// generate package name
+ 		int num = new Random(System.currentTimeMillis()).nextInt();
+@@ -55,6 +55,14 @@ public class TypeEnv {
+ 		}
+ 	}
+ 
++	private static final class Holder {
++		private final static TypeEnv INSTANCE = new TypeEnv();
++	}
++
++	public static TypeEnv getInstance() {
++		return Holder.INSTANCE;
++	}
++
+ 	public String getPackageName() {
+ 		return this.packageName;
+ 	}

@@ -3,6 +3,7 @@ package loglang.symbol;
 import loglang.misc.Utils;
 import nez.peg.tpeg.type.LType;
 import nez.peg.tpeg.type.TypeEnv;
+import nez.peg.tpeg.type.TypeEnvHelper;
 import nez.peg.tpeg.type.TypeException;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class SymbolTableTest {
 
     @Test
     public void test() throws TypeException {
-        TypeEnv env = new TypeEnv();
+        TypeEnv env = TypeEnvHelper.newTypeEnv();
         SymbolTable symbolTable = new SymbolTable();
         final String label = "hoge";
         ClassScope scope = symbolTable.newCaseScope(env, label);

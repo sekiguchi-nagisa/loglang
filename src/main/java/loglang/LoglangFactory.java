@@ -22,8 +22,6 @@ public class LoglangFactory {
     public final static String grammarFileName = "loglang.nez";
 
     public Loglang newLoglang(String scriptName) {
-        TypeEnv env = new TypeEnv();
-
         Tree<?> scriptTree = this.newScriptTree(scriptName);
         Tree<?> patternTree = getAndCheckTag(scriptTree, 0, "PatternDefinition");
         Tree<?> prefixTree = getAndCheckTag(scriptTree, 1, "PrefixDefinition");
@@ -39,12 +37,12 @@ public class LoglangFactory {
 
         Node.RootNode rootNode = (Node.RootNode) new Tree2NodeTranslator().translate(matcherTree);
         try {
-            new TypeChecker(env).visit(rootNode);
+            new TypeChecker(TypeEnv.getInstance()).visit(rootNode);
         } catch(Exception e) {
             reportErrorAndExit(matcherTree.getSource(), e);
         }
-        ByteCodeGenerator gen = new ByteCodeGenerator(env.getPackageName());
-        ByteCodeLoader loader = new ByteCodeLoader(env.getPackageName());
+        ByteCodeGenerator gen = new ByteCodeGenerator(TypeEnv.getInstance().getPackageName());
+        ByteCodeLoader loader = new ByteCodeLoader(TypeEnv.getInstance().getPackageName());
         for(Node.CaseNode caseNode : rootNode.getCaseNodes()) {
             Pair<String, byte[]> pair = gen.generateCode(caseNode);
             loader.definedAndLoadClass(pair.getLeft(), pair.getRight());

@@ -1,9 +1,6 @@
 package loglang.type;
 
-import nez.peg.tpeg.type.LType;
-import nez.peg.tpeg.type.Mangler;
-import nez.peg.tpeg.type.TypeEnv;
-import nez.peg.tpeg.type.TypeException;
+import nez.peg.tpeg.type.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,7 +14,7 @@ public class TypeTest {
 
     @Before
     public void setup() {
-        this.env = new TypeEnv();
+        this.env = TypeEnvHelper.newTypeEnv();
     }
 
     @Test

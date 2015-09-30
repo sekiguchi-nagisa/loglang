@@ -6,6 +6,14 @@ check_tool() {
     echo -n "-- found $1 - "; which $1
 }
 
+apply_patch() {
+    test -d $1
+    for p in $(find $1 -name "*.patch"); do
+        echo "apply patch: $p"
+        git apply $p
+    done
+}
+
 
 # check tools
 check_tool git
@@ -18,7 +26,7 @@ git submodule update --init
 # build Nez
 cd ./external/nez
 git stash && git stash clear
-git apply ../../build.xml.patch
+apply_patch ../../patch
 ant clean
 ant
 ant nez-core
