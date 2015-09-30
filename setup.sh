@@ -17,6 +17,8 @@ git submodule update --init
 
 # build Nez
 cd ./external/nez
+git stash && git stash clear
+git apply ../../build.xml.patch
 ant clean
 ant
 ant nez-core

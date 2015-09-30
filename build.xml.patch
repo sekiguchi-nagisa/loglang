@@ -1,0 +1,31 @@
+diff --git a/build.xml b/build.xml
+index 168dab1..9811d06 100644
+--- a/build.xml
++++ b/build.xml
+@@ -52,6 +52,16 @@
+ 			<zipfileset src="${asm_jar}" />
+ 		</jar>
+ 	</target>
++	
++	<!-- ========================================= -->
++	<!--          generate nez core module         -->
++	<!-- ========================================= -->
++	<target name="nez-core" depends="build">
++		<jar jarfile="nez-core.jar">
++			<fileset dir="${build_dir}" includes="**/*.class" excludes="**/*Test.class"/>
++		</jar>
++	</target>
++	
+ 
+ 	<!-- ================================== -->
+ 	<!-- CLEAN -->
+@@ -59,7 +69,8 @@
+ 	<target name="clean">
+ 		<delete dir="${build_dir}" />
+ 		<delete file="${BinaryName}.jar" />
+-		<delete dir="${build_test_dir}" />
++		<delete file="nez-core.jar" />
++		<delete dir="${build_test_dir}"/>
+ 	</target>
+ 
+ 	<!-- ================================== -->
