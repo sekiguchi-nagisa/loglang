@@ -8,15 +8,13 @@ W = [0-9a-zA-Z_]+
 
 IDENTIFIER = [a-zA-Z_][0-9a-zA-Z_]*
 
-PATTERN = 'pattern' !W
 STATE   = 'state'   !W
 VAR     = 'var'     !W
 TRUE    = 'true'    !W
 FALSE   = 'false'   !W
 
 
-KEYWORD = PATTERN
-        / STATE
+KEYWORD = STATE
         / VAR
         / TRUE
         / FALSE
@@ -99,7 +97,8 @@ HEX
 
 // language definition
 PrefixDefinition
-    = { ( '%' _  @ParsingExpression _ '%' )? #PrefixDefinition }
+    = '%' _  { @ParsingExpression #PrefixDefinition }  _ '%'  
+    / { #PrefixDefinition }
 
 MatchStatement
     = { ( _ @CaseStatement)+ #Match }

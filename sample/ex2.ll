@@ -10,13 +10,13 @@ Num : int = '0' / [1-9][0-9]*
 ]]
 
 %
- _  $h : Hour ':' $m : Minute ':' $s : Second _
+$h : Hour ':' $m : Minute ':' $s : Second _
 %
 
-$key : Str _ '=' _ $value : Num {
+$key : Str _ '=' _ $value : Num _ {
 
 }
 
-$b : Str {
+$b : Str _ {
 
 }

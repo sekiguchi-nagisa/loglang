@@ -5,14 +5,22 @@ import loglang.jvm.ByteCodeLoader;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
 import nez.Grammar;
+import nez.Parser;
+import nez.Strategy;
 import nez.ast.Source;
+import nez.ast.Symbol;
 import nez.ast.Tree;
+import nez.io.SourceContext;
+import nez.lang.GrammarFileLoader;
 import nez.peg.tpeg.SemanticException;
-import nez.peg.tpeg.TypedPEG;
 import nez.peg.tpeg.type.TypeEnv;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,7 +36,7 @@ public class LoglangFactory {
         Tree<?> matcherTree = getAndCheckTag(scriptTree, 2, "Match");
 
         List<Tree<?>> caseTrees = this.getCaseTrees(matcherTree);
-//        Grammar patternGrammar = this.newPatternGrammar(env, patternTree, prefixTree, caseTrees);
+        Grammar patternGrammar = this.newPatternGrammar(patternTree, prefixTree, caseTrees);
 
         if(Config.pegOnly) {
             System.out.println("+++ peg only +++");
@@ -48,8 +56,7 @@ public class LoglangFactory {
             loader.definedAndLoadClass(pair.getLeft(), pair.getRight());
         }
 
-//        return new Loglang(patternGrammar, caseTrees.size());
-        return null;
+        return new Loglang(patternGrammar, caseTrees.size());
     }
 
     /**
@@ -57,37 +64,35 @@ public class LoglangFactory {
      * @param scriptName
      * @return
      */
-    private Tree<?> newScriptTree(String scriptName) {   //FIXME:
-//        // parse script
-//        GrammarFile gf = null;
-//        try {
-//            gf = GrammarFile.loadNezFile(grammarFileName, NezOption.newDefaultOption());
-//        } catch(IOException e) {
-//            System.err.println("cannot load file: loglang.nez");
-//            System.exit(1);
-//        }
-//        Grammar g = gf.newGrammar("File");
-//
-//        SourceContext src = null;
-//        try {
-//            src = SourceContext.newFileContext(scriptName);
-//        } catch(IOException e) {
-//            System.err.println("cannot load file: " + scriptName);
-//            System.exit(1);
-//        }
-//
-//        CommonTree tree = g.parseCommonTree(src);
-//        if(tree == null) {
-//            System.err.println(src.getSyntaxErrorMessage());
-//            System.exit(1);
-//        }
-//        if(src.hasUnconsumed()) {
-//            System.err.println(src.getUnconsumedMessage());
-//            System.exit(1);
-//        }
-//        return tree;
+    private Tree<?> newScriptTree(String scriptName) {
+        // parse script
+        Grammar g = null;
+        try {
+            g = GrammarFileLoader.loadGrammar(grammarFileName, Strategy.newDefaultStrategy());
+        } catch(IOException e) {
+            System.err.println("cannot load file: loglang.nez");
+            System.exit(1);
+        }
+        Parser parser = g.newParser("File");
 
-        return null;
+        SourceContext src = null;
+        try {
+            src = SourceContext.newFileContext(scriptName);
+        } catch(IOException e) {
+            System.err.println("cannot load file: " + scriptName);
+            System.exit(1);
+        }
+
+        Tree<?> tree = parser.parseCommonTree(src);
+        if(tree == null) {
+            System.err.println(src.getSyntaxErrorMessage());
+            System.exit(1);
+        }
+        if(src.hasUnconsumed()) {
+            System.err.println(src.getUnconsumedMessage());
+            System.exit(1);
+        }
+        return tree;
     }
 
     private List<Tree<?>> getCaseTrees(Tree<?> matcherTree) {
@@ -98,127 +103,87 @@ public class LoglangFactory {
         return caseTrees;
     }
 
-    private List<TypedPEG.RuleExpr> createRuleExprs(Tree<?> patternTree) {  //FIXME:
-//        Tree2ExprTranslator translator = new Tree2ExprTranslator();
-//        List<TypedPEG.RuleExpr> ruleExprs = new ArrayList<>();
-//        for(Tree<?> ruleTree : patternTree) {
-//            ruleExprs.add((TypedPEG.RuleExpr) translator.translate(ruleTree));
-//        }
-//        return ruleExprs;
+    private void printTypedPEGPattern(Tree<?> patternTree, Tree<?> prefixTree, List<Tree<?>> caseTrees,
+                                      PrintStream stream) {
+        TreePrinter printer = TreePrinter.newPrinter(stream);
 
-        return null;
-    }
-
-    /**
-     *
-     * @param prefixTree
-     * @return
-     * empty or singleton list
-     */
-    private List<TypedPEG.RuleExpr> createPrefixExpr(Tree<?> prefixTree) {  //FIXME:
-        if(prefixTree.isEmpty()) {
-            return Collections.emptyList();
+        // create top level rule
+        stream.print("File : __File__ = ");
+        if(!prefixTree.isEmpty()) {
+            stream.print("$Prefix : ");
+            stream.print(TypeEnv.getAnonymousPrefixTypeName());
+            stream.print(" ");
         }
-//        TypedPEG expr = new Tree2ExprTranslator().translate(prefixTree.get(0));
-//        String name = TypeEnv.getAnonymousPrefixTypeName();
-//        return Collections.singletonList(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
-        return null;
-    }
+        stream.print("$ResultAST : (");
+        final int caseSize = caseTrees.size();
+        for(int i = 0; i < caseSize; i++) {
+            if(i > 0) {
+                stream.print(" / ");
+            }
+            stream.print(TypeEnv.createAnonymousCaseTypeName(i));
+        }
+        stream.println(")");
 
-    private List<TypedPEG.RuleExpr> createCaseExprs(List<Tree<?>> caseTrees) {  //FIXME:
-//        Tree2ExprTranslator translator = new Tree2ExprTranslator();
-//        List<TypedPEG.RuleExpr> casePatterns = new ArrayList<>();
-//        for(int i = 0; i < caseTrees.size(); i++) {
-//            String name = TypeEnv.createAnonymousCaseTypeName(i);
-//            TypedPEG expr = translator.translate(caseTrees.get(i));
-//            casePatterns.add(new TypedPEG.TypedRuleExpr(expr.getRange(), name, name, expr));
-//        }
-//        return casePatterns;
+        // create prefix rule
+        if(!prefixTree.isEmpty()) {
+            stream.print(TypeEnv.getAnonymousPrefixTypeName());
+            stream.print(" : ");
+            stream.print(TypeEnv.getAnonymousPrefixTypeName());
+            stream.print(" = ");
+            printer.print(prefixTree.get(0));
+            stream.println();
+        }
 
-        return null;
-    }
+        // create case rule
+        for(int i = 0; i < caseSize; i++) {
+            stream.print(TypeEnv.createAnonymousCaseTypeName(i));
+            stream.print(" : ");
+            stream.print(TypeEnv.createAnonymousCaseTypeName(i));
+            stream.print(" = ");
+            printer.print(caseTrees.get(i));
+            stream.println();
+        }
 
-    private void dumpPattern(List<TypedPEG.RuleExpr> ruleExprs,
-                             List<TypedPEG.RuleExpr> prefixExpr,
-                             List<TypedPEG.RuleExpr> caseExprs) {
-        TypedPEGPrettyPrinter printer = new TypedPEGPrettyPrinter();
-
-        System.err.println("@@ dump Rule @@");
-        ruleExprs.stream().forEach((t) -> printer.printPEG(System.err, t));
-
-        System.err.println("@@ dump Prefix Pattern @@");
-        prefixExpr.stream().forEach((t) -> printer.printPEG(System.err, t));
-
-        System.err.println("@@ dump Case Pattern @@");
-        caseExprs.stream().forEach((t) -> printer.printPEG(System.err, t));
-
-        System.err.println();
+        // create sub pattern
+        patternTree.forEach(printer::print);
     }
 
     /**
-     * convert to Nez grammar.
-     * @param env
+     * convert to Typed PEG file.
      * @param patternTree
      * @param prefixTree
      * @param caseTrees
      * @return
      */
-    private Grammar newPatternGrammar(TypeEnv env, Tree<?> patternTree,
-                                      Tree<?> prefixTree, List<Tree<?>> caseTrees) {
-//        List<TypedPEG.RuleExpr> ruleExprs = this.createRuleExprs(patternTree);
-//        List<TypedPEG.RuleExpr> prefixExpr = this.createPrefixExpr(prefixTree);
-//        List<TypedPEG.RuleExpr> caseExprs = this.createCaseExprs(caseTrees);
-//
-//        if(Config.dumpPEG) {
-//            System.err.println("++++ dump PEG ++++");
-//            this.dumpPattern(ruleExprs, prefixExpr, caseExprs);
-//        }
-//
-//        // check type
-//        try {
-//            ExprTypeChecker checker = new ExprTypeChecker(env);
-//
-//            checker.checkType(ruleExprs);
-//            checker.checkType(prefixExpr);
-//            checker.checkType(caseExprs);
-//        } catch(Exception e) {
-//            reportErrorAndExit(patternTree.getSource(), e);
-//        }
-//
-//        if(Config.dumpTypedPEG) {
-//            System.err.println("++++ dump typed PEG ++++");
-//            this.dumpPattern(ruleExprs, prefixExpr, caseExprs);
-//        }
-//
-//        try {
-//            Path path = Files.createTempFile("ll_pattern", ".nez");
-//            try(PrintStream stream = new PrintStream(path.toFile())) {
-//                new NezGrammarGenerator(stream).generate(ruleExprs, prefixExpr, caseExprs);
-//            } catch(Exception e) {
-//                Utils.propagate(e);
-//            }
-//
-//            String pathName = path.toString();
-//
-//            // delete pattern file before shutdown
-//            if(Config.dumpPattern) {
-//                System.err.println("@@@@ Dump Pattern File: " + pathName + " @@@@");
-//            } else {
-//                Runtime.getRuntime().addShutdownHook(
-//                        new Thread(() -> new File(pathName).delete())
-//                );
-//            }
+    private Grammar newPatternGrammar(Tree<?> patternTree, Tree<?> prefixTree, List<Tree<?>> caseTrees) {
+        try {
+            Path path = Files.createTempFile("ll_pattern", ".tpeg");
+            try(PrintStream stream = new PrintStream(path.toFile())) {
+                printTypedPEGPattern(patternTree, prefixTree, caseTrees, stream);
+            } catch(Exception e) {
+                Utils.propagate(e);
+            }
 
-//            return GrammarFile.loadGrammarFile(pathName, NezOption.newDefaultOption()).newGrammar("File");    //FIXME;
-//        } catch(IOException e) {
-//            Utils.propagate(e);
-//        }
+            String pathName = path.toString();
+
+            // delete pattern file before shutdown
+            if(Config.dumpPattern) {
+                System.err.println("@@@@ Dump Pattern File: " + pathName + " @@@@");
+            } else {
+                Runtime.getRuntime().addShutdownHook(
+                        new Thread(() -> new File(pathName).delete())
+                );
+            }
+            return GrammarFileLoader.loadGrammar(pathName, Strategy.newDefaultStrategy());
+        } catch(IOException e) {
+            Utils.propagate(e);
+        }
         return null;
     }
 
     private static Tree<?> getAndCheckTag(Tree<?> tree, int index, String tagName) {
         Tree<?> child = tree.get(index);
-//        assert child.is(Tag.tag(tagName));    //FIXME:
+        assert child.is(Symbol.tag(tagName));
         return child;
     }
 

@@ -25,10 +25,11 @@ git submodule update --init
 
 # build Nez
 cd ./external/nez
-git stash && git stash clear
 apply_patch ../../patch
 ant clean
 ant
 ant nez-core
+git stash && git stash clear
+
 
 mvn install:install-file -Dfile=nez-core.jar -DgroupId=nez-core -DartifactId=nez-core -Dversion=0.1 -Dpackaging=jar
