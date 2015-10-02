@@ -7,6 +7,7 @@ import nez.peg.tpeg.type.LType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/18.
@@ -334,6 +335,30 @@ public abstract class Node {
         @Override
         public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
             return visitor.visitPrintNode(this, param);
+        }
+    }
+
+    public static class AssertNode extends Node {
+        private Node condNode;
+        private Optional<Node> msgNode;
+
+        public AssertNode(LongRange range, Node condNode, Node msgNode) {
+            super(range);
+            this.condNode = condNode;
+            this.msgNode = Optional.ofNullable(msgNode);
+        }
+
+        public Node getCondNode() {
+            return condNode;
+        }
+
+        public Optional<Node> getMsgNode() {
+            return msgNode;
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitAssertNode(this, param);
         }
     }
 

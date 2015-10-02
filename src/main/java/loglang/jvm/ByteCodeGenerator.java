@@ -3,7 +3,6 @@ package loglang.jvm;
 import static loglang.Node.*;
 
 import loglang.*;
-import loglang.lang.Helper;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
 import loglang.TypeUtil;
@@ -159,7 +158,26 @@ public class ByteCodeGenerator implements NodeVisitor<Void, MethodBuilder>, Opco
         // boxing
         param.box(TypeUtil.asType(exprType));
 
-        param.invokeStatic(Type.getType(Helper.class), TypeUtil.toMethodDescriptor(void.class, "print", Object.class));
+        param.invokeStatic(Type.getType(loglang.lang.Helper.class), TypeUtil.toMethodDescriptor(void.class, "print", Object.class));
+
+        return null;
+    }
+
+    @Override
+    public Void visitAssertNode(AssertNode node, MethodBuilder param) {
+        if(Config.noAssert) {
+            return null;    // not generate assert statement
+        }
+
+        this.visit(node.getCondNode(), param);
+
+        node.getMsgNode().ifPresent(t -> this.visit(t, param));
+        if(!node.getMsgNode().isPresent()) {
+            param.pushNull();
+        }
+
+        param.invokeStatic(Type.getType(loglang.lang.Helper.class),
+                TypeUtil.toMethodDescriptor(void.class, "checkAssertion", boolean.class, String.class));
 
         return null;
     }

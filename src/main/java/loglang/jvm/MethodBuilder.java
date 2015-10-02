@@ -1,5 +1,6 @@
 package loglang.jvm;
 
+import com.sun.org.apache.bcel.internal.generic.ACONST_NULL;
 import loglang.Node;
 import loglang.TypeUtil;
 import loglang.misc.Pair;
@@ -83,5 +84,9 @@ public class MethodBuilder extends GeneratorAdapter {
                     Type.getType(boxedClass),
                     new Method(methodName, Type.getType(boxedClass), new Type[]{type}));
         }
+    }
+
+    public void pushNull() {
+        this.visitInsn(Opcodes.ACONST_NULL);
     }
 }

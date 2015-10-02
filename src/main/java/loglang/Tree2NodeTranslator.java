@@ -102,6 +102,9 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
 
     this.add("Print", t -> new PrintNode(range(t), this.translate(t.get(0))));
 
+    this.add("Assert", t -> new AssertNode(range(t), this.translate(t.get(0)),
+            t.size() == 2 ? this.translate(t.get(1)) : null));
+
     this.add("State", t -> {
         assert t.size() == 2;
         String name = t.get(0).toText();

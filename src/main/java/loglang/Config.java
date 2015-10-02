@@ -12,4 +12,9 @@ public final class Config {
     public final static boolean dumpByteCode = Utils.checkProperty("dumpByteCode", false);
     public final static boolean pegOnly = Utils.checkProperty("pegOnly", false);
     public final static boolean noAction = Utils.checkProperty("noAction", false);
+
+    /**
+     * for assert statement
+     */
+    public final static boolean noAssert = Utils.checkProperty("noAssert", false);
 }

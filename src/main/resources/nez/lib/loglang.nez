@@ -13,6 +13,7 @@ VAR     = 'var'     !W
 TRUE    = 'true'    !W
 FALSE   = 'false'   !W
 PRINT   = 'print'   !W
+ASSERT  = 'assert'  !W
 
 
 KEYWORD = STATE
@@ -20,6 +21,7 @@ KEYWORD = STATE
         / TRUE
         / FALSE
         / PRINT
+        / ASSERT
 
 _ = ([ \t\r\n] / COMMENT)*
 
@@ -121,10 +123,13 @@ Statements
     = { ( _ @Statement LINE_END)* #Statements }
 
 Statement
-    = VarDecl / PrintStatement / Expression
+    = VarDecl / PrintStatement / AssertStatement / Expression
 
 PrintStatement
-    = { 'print' _ @Expression #Print }
+    = { PRINT _ @Expression #Print }
+
+AssertStatement
+    = { ASSERT _ @Expression (_ ':' _ @Expression)? #Assert }
 
 VarDecl
     = { VAR _ @Variable _ '=' _ @Expression #VarDecl }

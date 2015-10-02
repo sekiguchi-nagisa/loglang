@@ -16,4 +16,8 @@ if [ "${LL_NO_ACTION}" != "" ]; then
     JVM_OPTION="${JVM_OPTION} -DnoAction=on"
 fi
 
+if [ "${LL_NO_ASSERT}" != "" ]; then
+    JVM_OPTION="${JVM_OPTION} -DnoAssert=on"
+fi
+
 java $JVM_OPTION -jar ./target/loglang-1.0-SNAPSHOT-jar-with-dependencies.jar $@

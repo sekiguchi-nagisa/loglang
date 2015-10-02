@@ -23,6 +23,7 @@ $key : Str _ '=' _ $value : Num NL {
 $b : Str NL {
     var a = true
     print a
+    assert a : "assert error!!"
     print 'hello'
     print "world"
 }

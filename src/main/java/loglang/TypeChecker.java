@@ -210,6 +210,14 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     }
 
     @Override
+    public Node visitAssertNode(AssertNode node, Void param) {
+        this.checkType(this.env.getBoolType(), node.getCondNode());
+        node.getMsgNode().ifPresent(t -> this.checkType(this.env.getStringType(), t));
+        node.setType(this.env.getVoidType());
+        return node;
+    }
+
+    @Override
     public Node visitPopNode(PopNode node, Void param) {
         throw new UnsupportedOperationException();    // not call it.
     }

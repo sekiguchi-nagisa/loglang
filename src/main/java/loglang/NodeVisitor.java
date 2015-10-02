@@ -24,6 +24,7 @@ public interface NodeVisitor<T, P> {
     T visitVarDeclNode(VarDeclNode node, P param);
     T visitVarNode(VarNode node, P param);
     T visitPrintNode(PrintNode node, P param);
+    T visitAssertNode(AssertNode node, P param);
     T visitPopNode(PopNode node, P param);
     T visitRootNode(RootNode node, P param);
 }
