@@ -130,21 +130,25 @@ VarDecl
     = { VAR _ @Variable _ '=' _ @Expression #VarDecl }
 
 Expression
-    = Float / Integer / Bool / Variable
+    = FloatLiteral / IntegerLiteral / BoolLiteral / StringLiteral / Variable
 
 NUM = '0' / [1-9][0-9]*
 
-Integer
+IntegerLiteral
     = { NUM #Integer }
 
 FLOAT_SUFFIX
     = [eE] [+-]? NUM
 
-Float
+FloatLiteral
     = { NUM '.' [0-9]+ FLOAT_SUFFIX? #Float }
 
-Bool
+BoolLiteral
     = { TRUE #True / FALSE #False }
+
+StringLiteral
+    = { '"'  ('\\' [trn\\"] / ![\t\r\n\\"] . )* '"' #String }
+    / { '\'' ('\\' [trn\\'] / ![\t\r\n\\'] . )* '\'' #String }
 
 Variable
     = { !KEYWORD IDENTIFIER #Variable }

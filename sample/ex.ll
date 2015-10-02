@@ -19,5 +19,6 @@ $key : Str _ '=' _ $value : Num NL {
 }
 
 $b : Str NL {
-
+    print 'hello'
+    print "world"
 }
