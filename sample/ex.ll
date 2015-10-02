@@ -15,10 +15,14 @@ $h : Hour ':' $m : Minute ':' $s : Second _
 %
 
 $key : Str _ '=' _ $value : Num NL {
+    state a = 345
     print 34
+    print a
 }
 
 $b : Str NL {
+    var a = true
+    print a
     print 'hello'
     print "world"
 }

@@ -135,6 +135,11 @@ public abstract class Node {
          */
         private int localSize = 0;
 
+        /**
+         * represent case context
+         */
+        private LType.AbstractStructureType thisType = null;
+
         public CaseNode(LongRange range, String labelName) {
             super(range);
             this.blockNode = new BlockNode(range);
@@ -181,6 +186,14 @@ public abstract class Node {
 
         public int getLocalSize() {
             return this.localSize;
+        }
+
+        public void setThisType(LType.AbstractStructureType thisType) {
+            this.thisType = thisType;
+        }
+
+        public LType.AbstractStructureType getThisType() {
+            return thisType;
         }
     }
 

@@ -127,7 +127,13 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         } catch(TypeException e) {
             throw new SemanticException(node.getRange(), e);
         }
-        this.classScope.enterMethod();
+
+        /**
+         * representing CaseContext#invoke()
+         * first entry is this
+         * second entry and third entry are method parameters.
+         */
+        this.classScope.enterMethod(3);
 
         // register state entry
         for(StateDeclNode child : node.getStateDeclNodes()) {
@@ -141,6 +147,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         this.checkTypeWithCurrentScope(node.getBlockNode());
 
         node.setLocalSize(this.classScope.getMaximumLocalSize());
+        node.setThisType(this.classScope.getOwnerType());
         this.classScope.exitMethod();
 
         node.setType(LType.voidType);

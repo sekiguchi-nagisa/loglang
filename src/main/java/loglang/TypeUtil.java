@@ -14,14 +14,15 @@ public class TypeUtil {
     private TypeUtil() {}
 
     public static int stackConsumption(Type type) {
-        Objects.requireNonNull(type);
-        if(type.equals(Type.VOID_TYPE)) {
+        switch(type.getSort()) {
+        case Type.VOID:
             return 0;
-        }
-        if(type.equals(Type.LONG_TYPE) || type.equals(Type.DOUBLE_TYPE)) {
+        case Type.LONG:
+        case Type.DOUBLE:
             return 2;
+        default:
+            return 1;
         }
-        return 1;
     }
 
     public static int stackConsumption(LType type) {
@@ -60,20 +61,11 @@ public class TypeUtil {
      * if represents primitive type, return false
      */
     public static boolean isObjectType(LType type) {
-        switch(type.getInternalName()) {
-        case "void":
-        case "boolean":
-        case "byte":
-        case "char":
-        case "short":
-        case "int":
-        case "long":
-        case "float":
-        case "double":
-            return false;
-        default:
-            return true;
-        }
+        return isObjectType(asType(type));
+    }
+
+    public static boolean isObjectType(Type type) {
+        return type.getSort() == Type.OBJECT;
     }
 
     public static Method toMethodDescriptor(Class<?> returnClass, String methodName, Class<?> ... paramClasses) {
