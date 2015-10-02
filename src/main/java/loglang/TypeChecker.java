@@ -11,7 +11,6 @@ import nez.peg.tpeg.type.TypeException;
 import java.util.Objects;
 
 import static loglang.Node.*;
-import static nez.peg.tpeg.SemanticException.*;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/18.
@@ -36,12 +35,12 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
         LType type = targetNode.getType();
         if(type == null) {
-            semanticError(targetNode.getRange(), "broken node");
+            throw new SemanticException(targetNode.getRange(), "broken node");
         }
 
         if(requiredType == null) {
             if(unacceptableType != null && unacceptableType.isSameOrBaseOf(type)) {
-                semanticError(targetNode.getRange(), "unacceptable type: " + type);
+                throw new SemanticException(targetNode.getRange(), "unacceptable type: " + type);
             }
             return targetNode;
         }
@@ -50,8 +49,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
             return targetNode;
         }
 
-        semanticError(targetNode.getRange(), "require: " + requiredType + ", but is: " + type);
-        return null;
+        throw new SemanticException(targetNode.getRange(), "require: " + requiredType + ", but is: " + type);
     }
 
     /**
@@ -168,7 +166,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         LType type = node.getInitValueNode().getType();
         MemberRef.FieldRef entry = this.classScope.newStateEntry(node.getName(), type, false);
         if(entry == null) {
-            semanticError(node.getRange(), "already defined state variable: " + node.getName());
+            throw new SemanticException(node.getRange(), "already defined state variable: " + node.getName());
         }
 
         node.setType(LType.voidType);
@@ -182,7 +180,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         LType type = node.getInitValueNode().getType();
         MemberRef.FieldRef entry = this.classScope.newLocalEntry(node.getName(), type, false);
         if(entry == null) {
-            semanticError(node.getRange(), "already defined local variable: " + node.getName());
+            throw new SemanticException(node.getRange(), "already defined local variable: " + node.getName());
         }
 
         node.setEntry(entry);
@@ -194,7 +192,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     public Node visitVarNode(VarNode node, Void param) {
         MemberRef.FieldRef entry = this.classScope.findEntry(node.getVarName());
         if(entry == null) {
-            semanticError(node.getRange(), "undefined variable: " + node.getVarName());
+            throw new SemanticException(node.getRange(), "undefined variable: " + node.getVarName());
         }
 
         node.setEntry(entry);
