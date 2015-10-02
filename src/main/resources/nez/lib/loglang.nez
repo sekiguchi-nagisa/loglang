@@ -12,12 +12,14 @@ STATE   = 'state'   !W
 VAR     = 'var'     !W
 TRUE    = 'true'    !W
 FALSE   = 'false'   !W
+PRINT   = 'print'   !W
 
 
 KEYWORD = STATE
         / VAR
         / TRUE
         / FALSE
+        / PRINT
 
 _ = ([ \t\r\n] / COMMENT)*
 
@@ -97,7 +99,7 @@ HEX
 
 // language definition
 PrefixDefinition
-    = '%' _  { @ParsingExpression #PrefixDefinition }  _ '%'  
+    = '%' _  { @ParsingExpression #PrefixDefinition }  _ '%'
     / { #PrefixDefinition }
 
 MatchStatement
@@ -119,7 +121,10 @@ Statements
     = { ( _ @Statement LINE_END)* #Statements }
 
 Statement
-    = VarDecl / Expression
+    = VarDecl / PrintStatement / Expression
+
+PrintStatement
+    = { 'print' _ @Expression #Print }
 
 VarDecl
     = { VAR _ @Variable _ '=' _ @Expression #VarDecl }

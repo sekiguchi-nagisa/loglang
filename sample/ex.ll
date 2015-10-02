@@ -15,7 +15,7 @@ $h : Hour ':' $m : Minute ':' $s : Second _
 %
 
 $key : Str _ '=' _ $value : Num NL {
-
+    print 34
 }
 
 $b : Str NL {

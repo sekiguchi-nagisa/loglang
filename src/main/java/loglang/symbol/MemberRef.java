@@ -1,6 +1,6 @@
 package loglang.symbol;
 
-import loglang.LTypes;
+import loglang.TypeUtil;
 import nez.peg.tpeg.type.LType;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
@@ -159,9 +159,9 @@ public abstract class MemberRef {
             final int paramSize = this.paramTypes.size();
             Type[] paramTypeDescs = new Type[paramSize];
             for(int i = 0; i < paramSize; i++) {
-                paramTypeDescs[i] = LTypes.asType(this.paramTypes.get(i));
+                paramTypeDescs[i] = TypeUtil.asType(this.paramTypes.get(i));
             }
-            return new Method(this.internalName, LTypes.asType(this.returnType), paramTypeDescs);
+            return new Method(this.internalName, TypeUtil.asType(this.returnType), paramTypeDescs);
         }
 
         /**

@@ -1,7 +1,7 @@
 package loglang.symbol;
 
 import loglang.misc.Utils;
-import loglang.LTypes;
+import loglang.TypeUtil;
 import nez.peg.tpeg.type.LType;
 
 import static loglang.symbol.MemberRef.*;
@@ -182,7 +182,7 @@ public class ClassScope {
 
             FieldRef entry = new FieldRef(this.curIndex, type, name, ownerType, attribute);
             this.entryMap.put(name, entry);
-            this.curIndex += LTypes.stackConsumption(type);
+            this.curIndex += TypeUtil.stackConsumption(type);
             return entry;
         }
     }

@@ -18,20 +18,23 @@ public class Loglang {
 
     private CaseContext[] cases;
 
-    Loglang(Grammar patternGrammar, int caseNum) {
+    Loglang(Grammar patternGrammar, CaseContext[] cases) {
         this.patternParser = patternGrammar.newParser("File");
 
-        this.cases = new CaseContext[caseNum];
+        if(Config.noAction) {
+            this.cases = new CaseContext[cases.length];
 
-        // dummy: FIXME
-        for(int i = 0; i < caseNum; i++) {
-            this.cases[i] = (p, a) -> {
-                if(p != null) {
-                    System.out.print(p.toText());
-                    System.out.print(" ");
-                }
-                System.out.println(a.toText());
-            };
+            for(int i = 0; i < cases.length; i++) {
+                this.cases[i] = (p, a) -> {
+                    if(p != null) {
+                        System.out.print(p.toText());
+                        System.out.print(" ");
+                    }
+                    System.out.println(a.toText());
+                };
+            }
+        } else {
+            this.cases = cases;
         }
     }
 
@@ -79,6 +82,8 @@ public class Loglang {
             } else if(result.size() == 2) {
                 prefixTreeWrapper = result.get(0);
                 caseTreeWrapper = result.get(1);
+            } else {
+                Utils.fatal("broken parsed result: " + System.lineSeparator() + result);
             }
             caseTreeWrapper = caseTreeWrapper.get(0);
             

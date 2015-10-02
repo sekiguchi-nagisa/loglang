@@ -3,11 +3,13 @@ package loglang.jvm;
 import static loglang.Node.*;
 
 import loglang.*;
+import loglang.lang.Helper;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
-import loglang.LTypes;
+import loglang.TypeUtil;
 import loglang.symbol.MemberRef;
-import nez.ast.CommonTree;
+import nez.ast.Tree;
+import nez.peg.tpeg.type.LType;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -17,6 +19,7 @@ import org.objectweb.asm.commons.Method;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Objects;
 
 /**
  * Created by skgchxngsxyz-opensuse on 15/08/19.
@@ -52,12 +55,12 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         // generate state (field)
         for(StateDeclNode child : caseNode.getStateDeclNodes()) {
             cw.visitField(ACC_PUBLIC, child.getName(),
-                    LTypes.asType(child.getInitValueNode().getType()).getDescriptor(),
+                    TypeUtil.asType(child.getInitValueNode().getType()).getDescriptor(),
                     null, null);
         }
 
         // generate constructor
-        Method methodDesc = new Method("<init>", Type.VOID_TYPE, new Type[0]);
+        Method methodDesc = TypeUtil.toConstructorDescriptor();
         GeneratorAdapter adapter = new GeneratorAdapter(ACC_PUBLIC, methodDesc, null, null, cw);
         adapter.loadThis();
         adapter.invokeConstructor(Type.getType(Object.class), methodDesc);
@@ -65,13 +68,13 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         for(StateDeclNode child : caseNode.getStateDeclNodes()) {
             this.visit(child.getInitValueNode(), adapter);
             adapter.putField(Type.getType("L" + className + ";"), child.getName(),
-                    LTypes.asType(child.getInitValueNode().getType()));
+                    TypeUtil.asType(child.getInitValueNode().getType()));
         }
         adapter.returnValue();
         adapter.endMethod();
 
         // generate method
-        methodDesc = new Method("invoke", Type.VOID_TYPE, new Type[] {Type.getType(CommonTree.class)});
+        methodDesc = TypeUtil.toMethodDescriptor(void.class, "invoke", Tree.class, Tree.class);
         adapter = new GeneratorAdapter(ACC_PUBLIC, methodDesc, null, null, cw);
 
         this.visit(caseNode.getBlockNode(), adapter);
@@ -83,6 +86,16 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
         // finalize
         cw.visitEnd();
         return Pair.of(className, cw.toByteArray());
+    }
+
+    @Override
+    public Void visit(Node node) {
+        throw new UnsupportedOperationException("not call it");
+    }
+
+    @Override
+    public Void visit(Node node, GeneratorAdapter param) {
+        return node.accept(this, Objects.requireNonNull(param));
     }
 
     @Override
@@ -130,14 +143,14 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
     @Override
     public Void visitVarDeclNode(VarDeclNode node, GeneratorAdapter param) {
         this.visit(node.getInitValueNode(), param);
-        Type desc = LTypes.asType(node.getEntry().getFieldType());
+        Type desc = TypeUtil.asType(node.getEntry().getFieldType());
         param.visitVarInsn(desc.getOpcode(ISTORE), node.getEntry().getIndex());
         return null;
     }
 
     @Override
     public Void visitVarNode(VarNode node, GeneratorAdapter param) {
-        Type desc = LTypes.asType(node.getEntry().getFieldType());
+        Type desc = TypeUtil.asType(node.getEntry().getFieldType());
         if(Utils.hasFlag(node.getEntry().getAttribute(), MemberRef.LOCAL_VAR)) {
             param.visitVarInsn(desc.getOpcode(ILOAD), node.getEntry().getIndex());
         } else {
@@ -147,11 +160,25 @@ public class ByteCodeGenerator implements NodeVisitor<Void, GeneratorAdapter>, O
     }
 
     @Override
+    public Void visitPrintNode(PrintNode node, GeneratorAdapter param) {
+        LType exprType = node.getExprNode().getType();
+
+        this.visit(node.getExprNode(), param);
+
+        // boxing
+        param.box(TypeUtil.asType(exprType));
+
+        param.invokeStatic(Type.getType(Helper.class), TypeUtil.toMethodDescriptor(void.class, "print", Object.class));
+
+        return null;
+    }
+
+    @Override
     public Void visitPopNode(PopNode node, GeneratorAdapter param) {
         this.visit(node.getExprNode(), param);
 
         // pop stack top
-        switch(LTypes.stackConsumption(node.getExprNode().getType())) {
+        switch(TypeUtil.stackConsumption(node.getExprNode().getType())) {
         case 1:
             param.pop();
             break;

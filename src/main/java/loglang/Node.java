@@ -304,6 +304,27 @@ public abstract class Node {
     }
 
     /**
+     * for printing
+     */
+    public static class PrintNode extends Node {
+        private Node exprNode;
+
+        public PrintNode(LongRange range, Node exprNode) {
+            super(range);
+            this.exprNode = Objects.requireNonNull(exprNode);
+        }
+
+        public Node getExprNode() {
+            return exprNode;
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitPrintNode(this, param);
+        }
+    }
+
+    /**
      * pseudo node for stack operation.
      * pop stack top.
      */

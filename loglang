@@ -12,4 +12,8 @@ if [ "${LL_PEG_ONLY}" != "" ]; then
     JVM_OPTION="${JVM_OPTION} -DpegOnly=on"
 fi
 
+if [ "${LL_NO_ACTION}" != "" ]; then
+    JVM_OPTION="${JVM_OPTION} -DnoAction=on"
+fi
+
 java $JVM_OPTION -jar ./target/loglang-1.0-SNAPSHOT-jar-with-dependencies.jar $@

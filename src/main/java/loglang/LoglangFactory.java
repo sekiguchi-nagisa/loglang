@@ -49,14 +49,30 @@ public class LoglangFactory {
         } catch(Exception e) {
             reportErrorAndExit(matcherTree.getSource(), e);
         }
+
         ByteCodeGenerator gen = new ByteCodeGenerator(TypeEnv.getInstance().getPackageName());
         ByteCodeLoader loader = new ByteCodeLoader(TypeEnv.getInstance().getPackageName());
-        for(Node.CaseNode caseNode : rootNode.getCaseNodes()) {
-            Pair<String, byte[]> pair = gen.generateCode(caseNode);
-            loader.definedAndLoadClass(pair.getLeft(), pair.getRight());
+
+        final int caseSize = rootNode.getCaseNodes().size();
+        CaseContext[] cases = new CaseContext[caseSize];
+
+        for(int i = 0; i < caseSize; i++) {
+            Pair<String, byte[]> pair = gen.generateCode(rootNode.getCaseNodes().get(i));
+            Class<?> clazz = loader.definedAndLoadClass(pair.getLeft(), pair.getRight());
+            cases[i] = newInstance(clazz, CaseContext.class);
         }
 
-        return new Loglang(patternGrammar, caseTrees.size());
+        return new Loglang(patternGrammar, cases);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T newInstance(Class<?> owner, Class<T> superClass) {
+        try {
+            return (T) owner.newInstance();
+        } catch(InstantiationException | IllegalAccessException e) {
+            Utils.propagate(e);
+            return null;
+        }
     }
 
     /**
