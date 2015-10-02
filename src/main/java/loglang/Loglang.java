@@ -85,7 +85,7 @@ public class Loglang {
             String tagName = caseTreeWrapper.getTag().getSymbol();
             int id = parseCaseTag(tagName);
 
-            System.out.println("matched: " + tagName);
+//            System.out.println("matched: " + tagName);
             this.cases[id].invoke(prefixTreeWrapper, caseTreeWrapper);
 
             System.out.println();

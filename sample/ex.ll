@@ -1,6 +1,7 @@
 [[
 
 _ = [ \t]*
+NL = [ \t\r\n]*
 Hour : int = [0-2][1-9]
 Minute  : int = [0-5][0-9]
 Second : int = [0-5][0-9]
@@ -13,10 +14,10 @@ Num : int = '0' / [1-9][0-9]*
 $h : Hour ':' $m : Minute ':' $s : Second _
 %
 
-$key : Str _ '=' _ $value : Num _ {
+$key : Str _ '=' _ $value : Num NL {
 
 }
 
-$b : Str _ {
+$b : Str NL {
 
 }
