@@ -77,7 +77,7 @@ public class Loglang {
             if(result.size() == 1) {
                 caseTreeWrapper = result.get(0);
             } else if(result.size() == 2) {
-                prefixTreeWrapper = result.get(0).get(0);
+                prefixTreeWrapper = result.get(0);
                 caseTreeWrapper = result.get(1);
             }
             caseTreeWrapper = caseTreeWrapper.get(0);
@@ -86,7 +86,7 @@ public class Loglang {
             int id = parseCaseTag(tagName);
 
             System.out.println("matched: " + tagName);
-            this.cases[id].invoke(null, caseTreeWrapper.get(0));
+            this.cases[id].invoke(prefixTreeWrapper, caseTreeWrapper);
 
             System.out.println();
         }
