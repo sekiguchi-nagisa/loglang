@@ -1,8 +1,5 @@
 package loglang.jvm;
 
-import com.sun.org.apache.bcel.internal.generic.ACONST_NULL;
-import loglang.Node;
-import loglang.TypeUtil;
 import loglang.misc.Pair;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;

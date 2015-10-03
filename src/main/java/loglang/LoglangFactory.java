@@ -50,7 +50,7 @@ public class LoglangFactory {
             reportErrorAndExit(matcherTree.getSource(), e);
         }
 
-        ByteCodeGenerator gen = new ByteCodeGenerator(TypeEnv.getInstance().getPackageName());
+        ByteCodeGenerator gen = new ByteCodeGenerator();
         ByteCodeLoader loader = new ByteCodeLoader(TypeEnv.getInstance().getPackageName());
 
         final int caseSize = rootNode.getCaseNodes().size();

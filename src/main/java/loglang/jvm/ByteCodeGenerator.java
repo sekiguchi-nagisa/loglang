@@ -5,7 +5,6 @@ import static loglang.Node.*;
 import loglang.*;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
-import loglang.TypeUtil;
 import loglang.symbol.MemberRef;
 import nez.ast.Tree;
 import nez.peg.tpeg.type.LType;
@@ -20,12 +19,6 @@ import java.util.Objects;
  * Created by skgchxngsxyz-opensuse on 15/08/19.
  */
 public class ByteCodeGenerator implements NodeVisitor<Void, MethodBuilder>, Opcodes {
-    private final String packageName;
-
-    public ByteCodeGenerator(String packageName) {
-        this.packageName = packageName;
-    }
-
     /**
      * code generation entry point
      * @param caseNode

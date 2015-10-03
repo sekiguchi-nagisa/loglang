@@ -4,9 +4,6 @@ import nez.peg.tpeg.type.LType;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 
-import java.util.List;
-import java.util.Objects;
-
 /**
  * Created by skgchxngsxyz-osx on 15/09/17.
  */

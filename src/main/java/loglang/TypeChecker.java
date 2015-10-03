@@ -134,9 +134,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
         this.classScope.enterMethod(3);
 
         // register state entry
-        for(StateDeclNode child : node.getStateDeclNodes()) {
-            this.checkTypeAsStatement(child);
-        }
+        node.getStateDeclNodes().forEach(this::checkTypeAsStatement);
 
         // register prefix tree field entry
 //        String name = TypeEnv.getAnonymousPrefixTypeName();
@@ -222,9 +220,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     @Override
     public Node visitRootNode(RootNode node, Void param) {
-        for(CaseNode caseNode : node.getCaseNodes()) {
-            this.checkTypeAsStatement(caseNode);
-        }
+        node.getCaseNodes().forEach(this::checkTypeAsStatement);
         node.setType(LType.voidType);
         return node;
     }
