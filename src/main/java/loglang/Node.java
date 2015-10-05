@@ -254,8 +254,8 @@ public abstract class Node {
 
         public VarDeclNode(LongRange range, String name, Node initValueNode) {
             super(range);
-            this.name = name;
-            this.initValueNode = initValueNode;
+            this.name = Objects.requireNonNull(name);
+            this.initValueNode = Objects.requireNonNull(initValueNode);
         }
 
         public String getName() {
@@ -290,7 +290,7 @@ public abstract class Node {
 
         public VarNode(LongRange range, String varName) {
             super(range);
-            this.varName = varName;
+            this.varName = Objects.requireNonNull(varName);
             this.entry = null;
         }
 
@@ -344,7 +344,7 @@ public abstract class Node {
 
         public AssertNode(LongRange range, Node condNode, Node msgNode) {
             super(range);
-            this.condNode = condNode;
+            this.condNode = Objects.requireNonNull(condNode);
             this.msgNode = Optional.ofNullable(msgNode);
         }
 
