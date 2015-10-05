@@ -73,25 +73,26 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     /**
      * allow void type.
-     * if resoleved type is not void, wrap popNode
+     * if resolved type is not void, wrap popNode.
+     * if targetNode if BlockNode, check type with new scope
      * @param targetNode
      * @return
      */
     public Node checkTypeAsStatement(Node targetNode) {
+        if(targetNode instanceof BlockNode) {
+            this.classScope.enterScope();
+            this.checkTypeWithCurrentScope((BlockNode) targetNode);
+            this.classScope.exitScope();
+            return targetNode;
+        }
+
         Node node = this.checkType(null, targetNode, null);
         return node.hasReturnValue() ? new PopNode(node) : node;
     }
 
     public void checkTypeWithCurrentScope(BlockNode blockNode) {
-        this.checkTypeAsStatement(blockNode);
+        this.checkType(this.env.getVoidType(), blockNode);
     }
-
-    public void checkTypeWithNewScope(BlockNode blockNode) {
-        this.classScope.entryScope();
-        this.checkTypeWithCurrentScope(blockNode);
-        this.classScope.exitScope();
-    }
-
 
     @Override
     public Node visitIntLiteralNode(IntLiteralNode node, Void param) {
@@ -159,7 +160,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     @Override
     public Node visitStateDeclNode(StateDeclNode node, Void param) {
-        node.setInitValueNode(this.checkType(node.getInitValueNode()));
+        node.replaceInitValueNode(this::checkType);
 
         LType type = node.getInitValueNode().getType();
         MemberRef.FieldRef entry = this.classScope.newStateEntry(node.getName(), type, false);
@@ -173,7 +174,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     @Override
     public Node visitVarDeclNode(VarDeclNode node, Void param) {
-        node.setInitValueNode(this.checkType(node.getInitValueNode()));
+        node.replaceInitValueNode(this::checkType);
 
         LType type = node.getInitValueNode().getType();
         MemberRef.FieldRef entry = this.classScope.newLocalEntry(node.getName(), type, false);
@@ -209,6 +210,23 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     public Node visitAssertNode(AssertNode node, Void param) {
         this.checkType(this.env.getBoolType(), node.getCondNode());
         node.getMsgNode().ifPresent(t -> this.checkType(this.env.getStringType(), t));
+        node.setType(this.env.getVoidType());
+        return node;
+    }
+
+    @Override
+    public Node visitWhileNode(WhileNode node, Void param) {
+        this.checkType(this.env.getBoolType(), node.getCondNode());
+        this.checkTypeAsStatement(node.getBlockNode());
+        node.setType(this.env.getVoidType());
+        return node;
+    }
+
+    @Override
+    public Node visitIfNode(IfNode node, Void param) {
+        this.checkType(this.env.getBoolType(), node.getCondNode());
+        node.replaceThenNode(this::checkTypeAsStatement);
+        node.repalceElseNodeIfExist(this::checkTypeAsStatement);
         node.setType(this.env.getVoidType());
         return node;
     }

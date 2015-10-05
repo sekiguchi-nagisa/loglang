@@ -1,6 +1,8 @@
 // syntax definition of Loglang
 // written by Nez
 
+File = Toplevel
+
 // lexical rule
 EOF = !.
 
@@ -14,6 +16,11 @@ TRUE    = 'true'    !W
 FALSE   = 'false'   !W
 PRINT   = 'print'   !W
 ASSERT  = 'assert'  !W
+IF      = 'if'      !W
+ELSE    = 'else'    !W
+WHILE   = 'while'   !W
+DO      = 'do'      !W
+
 
 
 KEYWORD = STATE
@@ -32,7 +39,7 @@ COMMENT = '//' (![\r\n] .)*
 LINE_END
     = WS (EOF / [\r\n] / ';')
 
-File
+Toplevel
     = { _ @PatternDefinition _ @PrefixDefinition  _ @MatchStatement _ #Root }
 
 PATTERN_BEGIN
@@ -123,13 +130,24 @@ Statements
     = { ( _ @Statement LINE_END)* #Statements }
 
 Statement
-    = VarDecl / PrintStatement / AssertStatement / Expression
+    = VarDecl / PrintStatement / AssertStatement / Block
+    / WhileStatement / IfStatement
+    / Expression
 
 PrintStatement
     = { PRINT _ @Expression #Print }
 
 AssertStatement
     = { ASSERT _ @Expression (_ ':' _ @Expression)? #Assert }
+
+Block
+    = { _ '{' _ (@Statement _)* '}' _ #Block }
+
+WhileStatement
+    = { WHILE _ '(' _ @Expression _ ')' _ @Block #While }
+
+IfStatement
+    = { If _ '(' _ @Expression _ ')' _ @Statement ( _ ELSE _ @Statement)? #If }
 
 VarDecl
     = { VAR _ @Variable _ '=' _ @Expression #VarDecl }

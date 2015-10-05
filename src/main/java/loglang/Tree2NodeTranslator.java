@@ -2,17 +2,13 @@ package loglang;
 
 import static loglang.Node.*;
 
-import nez.ast.Tree;
-
 /**
  * Created by skgchxngsxyz-osx on 15/08/18.
  */
 public class Tree2NodeTranslator extends TreeTranslator<Node> {{
     this.add("Match", t -> {  // entry point
         RootNode node = new RootNode(range(t));
-        for(Tree<?> child : t) {
-            node.addCaseNode((CaseNode) this.translate(child));
-        }
+        t.stream().map(this::translate).map(CaseNode.class::cast).forEach(node::addCaseNode);
         return node;
     });
 
@@ -24,29 +20,19 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
 
         CaseNode caseNode = new CaseNode(range(t), null); //FIXME: label
         // state decl
-        for(Tree<?> child : t.get(0)) {
-            caseNode.addStateDeclNode((StateDeclNode) this.translate(child));
-        }
+        t.get(0).stream().map(this::translate).map(StateDeclNode.class::cast).forEach(caseNode::addStateDeclNode);
 
         // block
-        for(Tree<?> child : t.get(1)) {
-            caseNode.addStmtNode(this.translate(child));
-        }
+        t.get(1).stream().map(this::translate).forEach(caseNode::addStmtNode);
 
         return caseNode;
     });
 
 
 
-    this.add("Integer", t -> {
-        int value = Integer.parseInt(t.toText());
-        return new IntLiteralNode(range(t), value);
-    });
+    this.add("Integer", t -> new IntLiteralNode(range(t), Integer.parseInt(t.toText())));
 
-    this.add("Float", t -> {
-        float value = Float.parseFloat(t.toText());
-        return new FloatLiteralNode(range(t), value);
-    });
+    this.add("Float", t -> new FloatLiteralNode(range(t), Float.parseFloat(t.toText())));
 
     this.add("True", t -> new BoolLiteralNode(range(t), true));
     this.add("False", t -> new BoolLiteralNode(range(t), false));
@@ -105,17 +91,20 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
     this.add("Assert", t -> new AssertNode(range(t), this.translate(t.get(0)),
             t.size() == 2 ? this.translate(t.get(1)) : null));
 
-    this.add("State", t -> {
-        assert t.size() == 2;
-        String name = t.get(0).toText();
-        Node initValueNode = this.translate(t.get(1));
-        return new StateDeclNode(range(t), name, initValueNode);
+    this.add("Block", t -> {
+        BlockNode blockNode = new BlockNode(range(t));
+        t.stream().map(this::translate).forEach(blockNode::addNode);
+        return blockNode;
     });
 
-    this.add("VarDecl", t -> {
-        assert t.size() == 2;
-        String name = t.get(0).toText();
-        Node initValueNode = this.translate(t.get(1));
-        return new VarDeclNode(range(t), name, initValueNode);
-    });
+    this.add("While", t -> new WhileNode(range(t), this.translate(t.get(0)), (BlockNode) this.translate(t.get(1))));
+
+    this.add("If", t ->
+            new IfNode(range(t), this.translate(t.get(0)), this.translate(t.get(1)),
+                    t.size() == 2 ? null : this.translate(t.get(2)))
+    );
+
+    this.add("State", t -> new StateDeclNode(range(t), t.get(0).toText(), this.translate(t.get(1))));
+
+    this.add("VarDecl", t -> new VarDeclNode(range(t), t.get(0).toText(), this.translate(t.get(1))));
 }}

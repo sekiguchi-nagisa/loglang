@@ -10,8 +10,10 @@ import loglang.symbol.MemberRef;
 import nez.ast.Tree;
 import nez.peg.tpeg.type.LType;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
 import java.util.Objects;
@@ -172,6 +174,49 @@ public class ByteCodeGenerator implements NodeVisitor<Void, MethodBuilder>, Opco
 
         param.invokeStatic(Type.getType(loglang.lang.Helper.class),
                 TypeUtil.toMethodDescriptor(void.class, "checkAssertion", boolean.class, String.class));
+
+        return null;
+    }
+
+    @Override
+    public Void visitWhileNode(WhileNode node, MethodBuilder param) {
+        // create label
+        Label continueLabel = param.newLabel();
+        Label breakLabel = param.newLabel();
+        param.getLoopLabels().push(Pair.of(breakLabel, continueLabel));
+
+        param.mark(continueLabel);
+        this.visit(node.getCondNode(), param);
+        param.ifZCmp(GeneratorAdapter.EQ, breakLabel);
+        this.visit(node.getBlockNode(), param);
+        param.goTo(continueLabel);
+        param.mark(breakLabel);
+
+        // remove label
+        param.getLoopLabels().pop();
+
+        return null;
+    }
+
+    @Override
+    public Void visitIfNode(IfNode node, MethodBuilder param) {
+        Label elseLabel = param.newLabel();
+        Label mergeLabel = param.newLabel();
+
+        // cond
+        this.visit(node.getCondNode(), param);
+        param.ifZCmp(GeneratorAdapter.EQ, elseLabel);
+
+        // then
+        this.visit(node.getThenNode(), param);
+        param.goTo(mergeLabel);
+
+        // else
+        param.mark(elseLabel);
+        node.getElseNode().ifPresent(e -> this.visit(e, param));
+
+        // merge
+        param.mark(mergeLabel);
 
         return null;
     }

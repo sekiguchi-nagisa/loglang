@@ -156,12 +156,8 @@ public abstract class MemberRef {
         }
 
         public Method asMethod() {
-            final int paramSize = this.paramTypes.size();
-            Type[] paramTypeDescs = new Type[paramSize];
-            for(int i = 0; i < paramSize; i++) {
-                paramTypeDescs[i] = TypeUtil.asType(this.paramTypes.get(i));
-            }
-            return new Method(this.internalName, TypeUtil.asType(this.returnType), paramTypeDescs);
+            return new Method(this.internalName, TypeUtil.asType(this.returnType),
+                    this.paramTypes.stream().map(TypeUtil::asType).toArray(Type[]::new));
         }
 
         /**

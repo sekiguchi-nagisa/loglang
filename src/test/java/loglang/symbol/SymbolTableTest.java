@@ -49,7 +49,7 @@ public class SymbolTableTest {
         assertEquals(null, scope.newLocalEntry("b", of(String.class), true));   // duplicated
 
         // block scope
-        scope.entryScope();
+        scope.enterScope();
 
         e = scope.newLocalEntry("c", of(boolean.class), true);
         assertEquals(1, e.getIndex());
@@ -94,7 +94,7 @@ public class SymbolTableTest {
         assertEquals(3, scope.getMaximumLocalSize());
 
         // reenter block scope
-        scope.entryScope();
+        scope.enterScope();
 
         e = scope.newLocalEntry("d", of(float.class), true);
         assertEquals(1, e.getIndex());
@@ -107,7 +107,7 @@ public class SymbolTableTest {
         assertEquals(3, scope.getMaximumLocalSize());
 
         // long or double(consume 2 entry)
-        scope.entryScope();
+        scope.enterScope();
 
         e = scope.newLocalEntry("d", of(long.class), false);
         assertEquals(1, e.getIndex());

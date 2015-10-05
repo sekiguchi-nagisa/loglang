@@ -80,7 +80,7 @@ public class ClassScope {
         this.indexCounters.pop();
     }
 
-    public void entryScope() {
+    public void enterScope() {
         int index = this.scopes.peek().curIndex;
         this.scopes.push(new Scope(index));
     }

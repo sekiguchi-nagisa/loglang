@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 /**
  * Created by skgchxngsxyz-osx on 15/08/18.
@@ -234,9 +235,10 @@ public abstract class Node {
             return visitor.visitStateDeclNode(this, param);
         }
 
-        public void setInitValueNode(Node initValueNode) {
-            this.initValueNode = Objects.requireNonNull(initValueNode);
+        public void replaceInitValueNode(UnaryOperator<Node> op) {
+            this.initValueNode = Objects.requireNonNull(op.apply(this.initValueNode));
         }
+
 
         public Node getInitValueNode() {
             return initValueNode;
@@ -262,8 +264,8 @@ public abstract class Node {
             return name;
         }
 
-        public void setInitValueNode(Node initValueNode) {
-            this.initValueNode = initValueNode;
+        public void replaceInitValueNode(UnaryOperator<Node> op) {
+            this.initValueNode = Objects.requireNonNull(op.apply(this.initValueNode));
         }
 
         public Node getInitValueNode() {
@@ -359,6 +361,78 @@ public abstract class Node {
         @Override
         public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
             return visitor.visitAssertNode(this, param);
+        }
+    }
+
+    public static class WhileNode extends Node {
+        private Node condNode;
+        private BlockNode blockNode;
+
+        public WhileNode(LongRange range, Node condNode, BlockNode blockNode) {
+            super(range);
+            this.condNode = Objects.requireNonNull(condNode);
+            this.blockNode = Objects.requireNonNull(blockNode);
+        }
+
+        public Node getCondNode() {
+            return condNode;
+        }
+
+        public BlockNode getBlockNode() {
+            return blockNode;
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitWhileNode(this, param);
+        }
+    }
+
+    public static class IfNode extends Node {
+        private Node condNode;
+        private Node thenNode;
+        private Optional<Node> elseNode;
+
+        /**
+         *
+         * @param range
+         * @param condNode
+         * @param thenNode
+         * @param elseNode
+         * may be null if has no else
+         */
+        public IfNode(LongRange range, Node condNode, Node thenNode, Node elseNode) {
+            super(range);
+            this.condNode = Objects.requireNonNull(condNode);
+            this.thenNode = Objects.requireNonNull(thenNode);
+            this.elseNode = Optional.ofNullable(elseNode);
+        }
+
+        public Node getCondNode() {
+            return condNode;
+        }
+
+        public Node getThenNode() {
+            return thenNode;
+        }
+
+        public void replaceThenNode(UnaryOperator<Node> op) {
+            this.thenNode = Objects.requireNonNull(op.apply(this.getThenNode()));
+        }
+
+        public Optional<Node> getElseNode() {
+            return elseNode;
+        }
+
+        public void repalceElseNodeIfExist(UnaryOperator<Node> op) {
+            if(this.elseNode.isPresent()) {
+                this.elseNode.of(op.apply(this.elseNode.get()));
+            }
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitIfNode(this, param);
         }
     }
 
