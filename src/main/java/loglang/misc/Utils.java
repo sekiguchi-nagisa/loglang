@@ -10,11 +10,11 @@ import java.util.Random;
 public class Utils {
     private Utils() {}
 
-    public static void propagate(Exception e) {
+    public static RuntimeException propagate(Exception e) {
         if(e instanceof RuntimeException) {
-            throw (RuntimeException) e;
+            return (RuntimeException) e;
         }
-        throw new RuntimeException(e);
+        return new RuntimeException(e);
     }
 
     private final static String[] enableKeywords = {
@@ -40,16 +40,6 @@ public class Utils {
             }
         }
         return defaultValue;
-    }
-
-    public static void fatal(String message) {
-        StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-        System.err.println("fatal: " + message);
-        for(int i = 2; i < elements.length; i++) {
-            StackTraceElement element = elements[i];
-            System.err.println("\tat " + element);
-        }
-        System.exit(1);
     }
 
     private final static Random rnd = new Random(System.currentTimeMillis());

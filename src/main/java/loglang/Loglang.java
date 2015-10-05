@@ -1,5 +1,6 @@
 package loglang;
 
+import loglang.misc.FatalError;
 import loglang.misc.Utils;
 import nez.Grammar;
 import nez.Parser;
@@ -16,7 +17,7 @@ import java.util.Objects;
 public class Loglang {
     private final Parser patternParser;
 
-    private CaseContext[] cases;
+    private final CaseContext[] cases;
 
     Loglang(Grammar patternGrammar, CaseContext[] cases) {
         this.patternParser = patternGrammar.newParser("File");
@@ -46,7 +47,7 @@ public class Loglang {
         try {
             this.invoke(SourceContext.newFileContext(Objects.requireNonNull(inputName)));
         } catch(IOException e) {
-            Utils.propagate(e);
+            throw Utils.propagate(e);
         }
     }
 
@@ -76,14 +77,14 @@ public class Loglang {
             }
 
             Tree<?> prefixTreeWrapper = null;
-            Tree<?> caseTreeWrapper = null;
+            Tree<?> caseTreeWrapper;
             if(result.size() == 1) {
                 caseTreeWrapper = result.get(0);
             } else if(result.size() == 2) {
                 prefixTreeWrapper = result.get(0);
                 caseTreeWrapper = result.get(1);
             } else {
-                Utils.fatal("broken parsed result: " + System.lineSeparator() + result);
+                throw new FatalError("broken parsed result: " + System.lineSeparator() + result);
             }
             caseTreeWrapper = caseTreeWrapper.get(0);
             

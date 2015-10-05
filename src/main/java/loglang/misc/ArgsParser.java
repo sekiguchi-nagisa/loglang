@@ -12,7 +12,7 @@ public class ArgsParser {
     public interface OptionListener {
         void invoke(Optional<String> arg);
     }
-    private static OptionListener nullListener = (arg)-> { };
+    private static final OptionListener nullListener = (arg)-> { };
 
     private OptionListener defaultListener = nullListener;    // do nothing
 

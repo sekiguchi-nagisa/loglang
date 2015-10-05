@@ -3,6 +3,7 @@ package loglang.jvm;
 import static loglang.Node.*;
 
 import loglang.*;
+import loglang.misc.FatalError;
 import loglang.misc.Pair;
 import loglang.misc.Utils;
 import loglang.symbol.MemberRef;
@@ -188,7 +189,7 @@ public class ByteCodeGenerator implements NodeVisitor<Void, MethodBuilder>, Opco
             param.pop2();
             break;
         default:
-            Utils.fatal("broken popNode type: " + node.getExprNode().getType());
+            throw new FatalError("broken popNode type: " + node.getExprNode().getType());
         }
         return null;
     }

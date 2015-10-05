@@ -1,5 +1,6 @@
 package loglang;
 
+import loglang.misc.FatalError;
 import loglang.misc.Utils;
 import nez.ast.Tree;
 import nez.peg.tpeg.LongRange;
@@ -16,7 +17,7 @@ public abstract class TreeTranslator<R> {
 
     protected void add(String tagName, TagHandler<R> handler) {
         if(Objects.nonNull(this.handlerMap.put(tagName, handler))) {
-            Utils.fatal("duplicated tag: " + tagName);
+            throw new FatalError("duplicated tag: " + tagName);
         }
     }
 
@@ -24,14 +25,13 @@ public abstract class TreeTranslator<R> {
         String key = tree.getTag().getSymbol();
         TagHandler<R> handler = this.handlerMap.get(key);
         if(Objects.isNull(handler)) {
-            Utils.fatal("undefined handler: " + key);
+            throw new FatalError("undefined handler: " + key);
         }
         try {
             return handler.invoke(tree);
         } catch(Exception e) {
-            Utils.propagate(e);
+            throw Utils.propagate(e);
         }
-        return null;
     }
 
     @FunctionalInterface

@@ -70,8 +70,7 @@ public class LoglangFactory {
         try {
             return (T) owner.newInstance();
         } catch(InstantiationException | IllegalAccessException e) {
-            Utils.propagate(e);
-            return null;
+            throw Utils.propagate(e);
         }
     }
 
@@ -177,7 +176,7 @@ public class LoglangFactory {
             try(PrintStream stream = new PrintStream(path.toFile())) {
                 printTypedPEGPattern(patternTree, prefixTree, caseTrees, stream);
             } catch(Exception e) {
-                Utils.propagate(e);
+                throw Utils.propagate(e);
             }
 
             String pathName = path.toString();
@@ -192,9 +191,8 @@ public class LoglangFactory {
             }
             return GrammarFileLoader.loadGrammar(pathName, Strategy.newDefaultStrategy());
         } catch(IOException e) {
-            Utils.propagate(e);
+            throw Utils.propagate(e);
         }
-        return null;
     }
 
     private static Tree<?> getAndCheckTag(Tree<?> tree, int index, String tagName) {
@@ -217,7 +215,7 @@ public class LoglangFactory {
                     "semantic error", ((SemanticException) cause).getRange().pos, e.getMessage()));
             System.exit(1);
         } else {
-            Utils.propagate(e);
+            throw Utils.propagate(e);
         }
     }
 }

@@ -1,7 +1,7 @@
 package loglang.jvm;
 
 import loglang.Config;
-import loglang.misc.Utils;
+import loglang.misc.FatalError;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -79,7 +79,7 @@ public class ByteCodeLoader extends ClassLoader {
     public void addByteCode(String className, byte[] byteCode) {
         String binaryName = toBinaryName(className);
         if(this.byteCodeMap.put(binaryName, byteCode) != null) {
-            Utils.fatal("already defined class: " + className);
+            throw new FatalError("already defined class: " + className);
         }
         dump(binaryName, byteCode);
     }
@@ -99,9 +99,8 @@ public class ByteCodeLoader extends ClassLoader {
             return this.loadClass(binaryName);
         } catch (Throwable e) {
             e.printStackTrace();
-            Utils.fatal("class loading failed: " + binaryName);
+            throw new FatalError("class loading failed: " + binaryName);
         }
-        return null;
     }
 
     /**

@@ -46,7 +46,7 @@ public final class TypeMatch {
                         action.apply(Optional.ofNullable(value));
                     }
                 } catch(Exception e) {
-                    Utils.propagate(e);
+                    throw Utils.propagate(e);
                 }
             }
         };
@@ -85,7 +85,7 @@ public final class TypeMatch {
                         this.action.apply((T) value);
                     }
                 } catch(Exception e) {
-                    Utils.propagate(e);
+                    throw Utils.propagate(e);
                 }
                 return true;
             }

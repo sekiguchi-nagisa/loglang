@@ -1,7 +1,7 @@
 package loglang;
 
+import loglang.misc.FatalError;
 import loglang.misc.TypeMatch;
-import loglang.misc.Utils;
 import nez.peg.tpeg.TypedPEG;
 
 import java.io.PrintStream;
@@ -38,7 +38,7 @@ public class TypedPEGPrettyPrinter {
             Object fieldValue = field.get(owner);
             this.print(fieldValue);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            Utils.fatal(e.getClass() + ":" + e.getMessage());
+            throw new FatalError(e.getClass() + ":" + e.getMessage());
         }
     }
 
