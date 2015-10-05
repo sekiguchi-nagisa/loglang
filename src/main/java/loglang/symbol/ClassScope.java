@@ -6,10 +6,7 @@ import nez.peg.tpeg.type.LType;
 
 import static loglang.symbol.MemberRef.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * for local variable and instance field management
@@ -21,8 +18,8 @@ public class ClassScope {
     private final LType.AbstractStructureType ownerType;
 
     private final Map<String, FieldRef> fieldMap = new HashMap<>();
-    private final ArrayList<Scope> scopes = new ArrayList<>();
-    private final ArrayList<Integer> indexCounters = new ArrayList<>();
+    private final ArrayDeque<Scope> scopes = new ArrayDeque<>();
+    private final ArrayDeque<Integer> indexCounters = new ArrayDeque<>();
 
     ClassScope(LType.AbstractStructureType ownerType) {
         this.ownerType = Objects.requireNonNull(ownerType);
@@ -47,9 +44,8 @@ public class ClassScope {
         }
 
         // if not found, search local entry
-        final int size = this.scopes.size();
-        for(int i = size - 1; i > -1; i--) {
-            e = this.scopes.get(i).find(symbolName);
+        for(Scope scope : this.scopes) {
+            e = scope.find(symbolName);
             if(Objects.nonNull(e)) {
                 return e;
             }
@@ -68,8 +64,8 @@ public class ClassScope {
      * if this method represents instance method, initLocalSize is 1
      */
     public void enterMethod(int initLocalSize) {
-        this.scopes.add(new Scope(initLocalSize));
-        this.indexCounters.add(initLocalSize);
+        this.scopes.push(new Scope(initLocalSize));
+        this.indexCounters.push(initLocalSize);
     }
 
     /**
@@ -80,25 +76,26 @@ public class ClassScope {
     }
 
     public void exitMethod() {
-        Utils.pop(this.scopes);
-        Utils.pop(this.indexCounters);
+        this.scopes.pop();
+        this.indexCounters.pop();
     }
 
     public void entryScope() {
-        int index = Utils.peek(this.scopes).curIndex;
-        this.scopes.add(new Scope(index));
+        int index = this.scopes.peek().curIndex;
+        this.scopes.push(new Scope(index));
     }
 
     public void exitScope() {
-        Scope scope = Utils.pop(this.scopes);
+        Scope scope = this.scopes.pop();
         final int index = scope.curIndex;
-        if(index > Utils.peek(this.indexCounters)) {
-            this.indexCounters.set(this.indexCounters.size() - 1, index);
+        if(index > this.indexCounters.peek()) {
+            this.indexCounters.pop();
+            this.indexCounters.push(index);
         }
     }
 
     public int getMaximumLocalSize() {
-        return Utils.peek(this.indexCounters);
+        return this.indexCounters.peek();
     }
 
     /**
@@ -119,7 +116,7 @@ public class ClassScope {
         if(readOnly) {
             attribute = Utils.setFlag(attribute, MemberRef.READ_ONLY);
         }
-        return Utils.peek(this.scopes).newEntry(symbolName, type, attribute, LType.anyType);
+        return this.scopes.peek().newEntry(symbolName, type, attribute, LType.anyType);
     }
 
     /**
