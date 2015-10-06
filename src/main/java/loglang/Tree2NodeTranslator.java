@@ -28,7 +28,9 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
         return caseNode;
     });
 
+    this.add("CondOr", t -> CondOpNode.newOrNode(range(t), this.translate(t.get(0)), this.translate(t.get(1))));
 
+    this.add("CondAnd", t -> CondOpNode.newAndNode(range(t), this.translate(t.get(0)), this.translate(t.get(1))));
 
     this.add("Integer", t -> new IntLiteralNode(range(t), Integer.parseInt(t.toText())));
 

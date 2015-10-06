@@ -153,6 +153,15 @@ VarDecl
     = { VAR _ @Variable _ '=' _ @Expression #VarDecl }
 
 Expression
+    = CondOrExpression
+
+CondOrExpression
+    = CondAndExpression {@ _ '||' _ @CondAndExpression #CondOr }*
+
+CondAndExpression
+    = PrimaryExpression {@ _ '&&' _ @PrimaryExpression #CondAnd }*
+
+PrimaryExpression
     = FloatLiteral / IntegerLiteral / BoolLiteral / StringLiteral / Variable
 
 NUM = '0' / [1-9][0-9]*

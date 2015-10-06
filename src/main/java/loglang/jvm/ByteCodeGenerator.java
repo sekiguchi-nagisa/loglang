@@ -107,6 +107,44 @@ public class ByteCodeGenerator implements NodeVisitor<Void, MethodBuilder>, Opco
     }
 
     @Override
+    public Void visitCondOpNode(CondOpNode node, MethodBuilder param) {
+        if(node.isAnd()) {  // conditional and
+            Label rightLabel = param.newLabel();
+            Label mergeLabel = param.newLabel();
+
+            // and left
+            this.visit(node.getLeftNode(), param);
+            param.ifZCmp(GeneratorAdapter.NE, rightLabel);
+            param.push(false);
+            param.goTo(mergeLabel);
+
+            // and right
+            param.mark(rightLabel);
+            this.visit(node.getRightNode(), param);
+
+            // merge
+            param.mark(mergeLabel);
+        } else {    // conditional or
+            Label rightLabel = param.newLabel();
+            Label mergeLabel = param.newLabel();
+
+            // or left
+            this.visit(node.getLeftNode(), param);
+            param.ifZCmp(GeneratorAdapter.EQ, rightLabel);
+            param.push(true);
+            param.goTo(mergeLabel);
+
+            // or right
+            param.mark(rightLabel);
+            this.visit(node.getRightNode(), param);
+
+            // merge
+            param.mark(mergeLabel);
+        }
+        return null;
+    }
+
+    @Override
     public Void visitCaseNode(CaseNode node, MethodBuilder param) {
         throw new UnsupportedOperationException();
     }

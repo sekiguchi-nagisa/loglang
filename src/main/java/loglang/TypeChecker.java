@@ -119,6 +119,14 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     }
 
     @Override
+    public Node visitCondOpNode(CondOpNode node, Void param) {
+        this.checkType(this.env.getBoolType(), node.getLeftNode());
+        this.checkType(this.env.getBoolType(), node.getRightNode());
+        node.setType(this.env.getBoolType());
+        return node;
+    }
+
+    @Override
     public Node visitCaseNode(CaseNode node, Void param) {  //FIXME: case parameter
         // create new ClassScope
         try {

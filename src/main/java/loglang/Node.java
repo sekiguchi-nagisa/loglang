@@ -121,6 +121,45 @@ public abstract class Node {
         }
     }
 
+    public static class CondOpNode extends Node {
+        private final boolean isAnd;
+
+        private Node leftNode;
+        private Node rightNode;
+
+        CondOpNode(LongRange range, Node leftNode, Node rightNode, boolean isAnd) {
+            super(range);
+            this.leftNode = leftNode;
+            this.rightNode = rightNode;
+            this.isAnd = isAnd;
+        }
+
+        public static CondOpNode newAndNode(LongRange range, Node leftNode, Node rightNode) {
+            return new CondOpNode(range, leftNode, rightNode, true);
+        }
+
+        public static CondOpNode newOrNode(LongRange range, Node leftNode, Node rightNode) {
+            return new CondOpNode(range, leftNode, rightNode, false);
+        }
+
+        public Node getLeftNode() {
+            return leftNode;
+        }
+
+        public Node getRightNode() {
+            return rightNode;
+        }
+
+        public boolean isAnd() {
+            return isAnd;
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitCondOpNode(this, param);
+        }
+    }
+
     public static class CaseNode extends Node {
         int caseIndex = -1;
 
