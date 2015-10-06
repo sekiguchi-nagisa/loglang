@@ -5,9 +5,10 @@ import loglang.misc.Utils;
 import nez.Grammar;
 import nez.Parser;
 import nez.ast.Tree;
-import nez.io.SourceContext;
 import nez.peg.tpeg.type.TypeEnv;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -40,12 +41,12 @@ public class Loglang {
     }
 
     public void invoke(String sourceName, String line) {
-        this.invoke(SourceContext.newStringContext(Objects.requireNonNull(line)));
+        this.invoke(new InputStreamContext(sourceName, new ByteArrayInputStream(line.getBytes())));
     }
 
     public void invoke(String inputName) {
         try {
-            this.invoke(SourceContext.newFileContext(Objects.requireNonNull(inputName)));
+            this.invoke(new InputStreamContext(inputName, new FileInputStream(inputName)));
         } catch(IOException e) {
             throw Utils.propagate(e);
         }
@@ -67,7 +68,7 @@ public class Loglang {
         return Integer.parseInt(id);
     }
 
-    public void invoke(SourceContext inputSource) {
+    public void invoke(InputStreamContext inputSource) {
         Objects.requireNonNull(inputSource);
         while(inputSource.hasUnconsumed()) {
             Tree<?> result = this.patternParser.parseCommonTree(inputSource);
@@ -95,6 +96,8 @@ public class Loglang {
             this.cases[id].invoke(prefixTreeWrapper, caseTreeWrapper);
 
             System.out.println();
+
+            inputSource.trim();
         }
     }
 }

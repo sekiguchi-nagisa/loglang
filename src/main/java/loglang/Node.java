@@ -503,9 +503,7 @@ public abstract class Node {
         }
 
         public void repalceElseNodeIfExist(UnaryOperator<Node> op) {
-            if(this.elseNode.isPresent()) {
-                this.elseNode.of(op.apply(this.elseNode.get()));
-            }
+            this.elseNode = this.elseNode.map(op::apply);
         }
 
         @Override
