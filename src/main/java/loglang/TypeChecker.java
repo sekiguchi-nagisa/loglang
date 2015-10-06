@@ -119,6 +119,18 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
     }
 
     @Override
+    public Node visitTernaryNode(TernaryNode node, Void param) {
+        this.checkType(this.env.getBoolType(), node.getCondNode());
+        node.replaceLeftNode(this::checkType);
+
+        LType leftType = node.getLeftNode().getType();
+        node.replaceRightNode(t -> this.checkType(leftType, t));
+
+        node.setType(leftType);
+        return node;
+    }
+
+    @Override
     public Node visitCondOpNode(CondOpNode node, Void param) {
         this.checkType(this.env.getBoolType(), node.getLeftNode());
         this.checkType(this.env.getBoolType(), node.getRightNode());

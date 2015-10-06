@@ -121,6 +121,45 @@ public abstract class Node {
         }
     }
 
+    public static class TernaryNode extends Node {
+        private Node condNode;
+
+        private Node leftNode;
+        private Node rightNode;
+
+        public TernaryNode(LongRange range, Node condNode, Node leftNode, Node rightNode) {
+            super(range);
+            this.condNode = Objects.requireNonNull(condNode);
+            this.leftNode = Objects.requireNonNull(leftNode);
+            this.rightNode = Objects.requireNonNull(rightNode);
+        }
+
+        public Node getCondNode() {
+            return condNode;
+        }
+
+        public Node getLeftNode() {
+            return leftNode;
+        }
+
+        public void replaceLeftNode(UnaryOperator<Node> op) {
+            this.leftNode = Objects.requireNonNull(op.apply(this.leftNode));
+        }
+
+        public Node getRightNode() {
+            return rightNode;
+        }
+
+        public void replaceRightNode(UnaryOperator<Node> op) {
+            this.rightNode = Objects.requireNonNull(op.apply(this.rightNode));
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitTernaryNode(this, param);
+        }
+    }
+
     public static class CondOpNode extends Node {
         private final boolean isAnd;
 
@@ -129,8 +168,8 @@ public abstract class Node {
 
         CondOpNode(LongRange range, Node leftNode, Node rightNode, boolean isAnd) {
             super(range);
-            this.leftNode = leftNode;
-            this.rightNode = rightNode;
+            this.leftNode = Objects.requireNonNull(leftNode);
+            this.rightNode = Objects.requireNonNull(rightNode);
             this.isAnd = isAnd;
         }
 

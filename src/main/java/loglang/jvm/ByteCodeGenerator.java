@@ -107,6 +107,29 @@ public class ByteCodeGenerator implements NodeVisitor<Void, MethodBuilder>, Opco
     }
 
     @Override
+    public Void visitTernaryNode(TernaryNode node, MethodBuilder param) {
+        Label elseLabel = param.newLabel();
+        Label mergeLabel = param.newLabel();
+
+        // cond
+        this.visit(node.getCondNode(), param);
+        param.ifZCmp(GeneratorAdapter.EQ, elseLabel);
+
+        // then
+        this.visit(node.getLeftNode(), param);
+        param.goTo(mergeLabel);
+
+        // else
+        param.mark(elseLabel);
+        this.visit(node.getRightNode(), param);
+
+        // merge
+        param.mark(mergeLabel);
+
+        return null;
+    }
+
+    @Override
     public Void visitCondOpNode(CondOpNode node, MethodBuilder param) {
         if(node.isAnd()) {  // conditional and
             Label rightLabel = param.newLabel();
