@@ -153,7 +153,10 @@ VarDecl
     = { VAR _ @Variable _ '=' _ @Expression #VarDecl }
 
 Expression
-    = CondOrExpression
+    = TernaryExpression
+
+TernaryExpression
+    = CondOrExpression {@ _ '?' _ @TernaryExpression _ ':' _ @TernaryExpression #Ternary }?
 
 CondOrExpression
     = CondAndExpression {@ _ '||' _ @CondAndExpression #CondOr }*
