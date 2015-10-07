@@ -1,6 +1,7 @@
 package loglang.symbol;
 
 import loglang.TypeUtil;
+import loglang.lang.OperatorTable;
 import nez.peg.tpeg.type.LType;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
@@ -216,4 +217,6 @@ public abstract class MemberRef {
             this.kind = InvocationKind.INVOKE_SPECIAL;
         }
     }
+
+    public final static LType operatorHolderType = new LType(OperatorTable.class, LType.anyType);
 }

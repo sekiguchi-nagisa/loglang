@@ -17,7 +17,7 @@ import static loglang.Node.*;
  */
 public class TypeChecker implements NodeVisitor<Node, Void> {
     private final TypeEnv env;
-    private final SymbolTable symbolTable = new SymbolTable();
+    private final SymbolTable symbolTable;
 
     /**
      * for currently processing class.
@@ -26,6 +26,7 @@ public class TypeChecker implements NodeVisitor<Node, Void> {
 
     public TypeChecker(TypeEnv env) {
         this.env = Objects.requireNonNull(env);
+        this.symbolTable = new SymbolTable(this.env);
     }
 
     public Node checkType(LType requiredType, Node targetNode, LType unacceptableType) {  //FIXME: coercion
