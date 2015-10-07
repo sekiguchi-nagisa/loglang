@@ -4,8 +4,6 @@ import nez.io.SourceContext;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -90,21 +88,45 @@ public class InputStreamContext extends SourceContext {
     }
 
     @Override
-    public boolean match(long pos, byte[] text) {   //FIXME: faster matching
+    public boolean match(long pos, byte[] text) {
         if(!this.reserve(text.length)) {
             return false;
         }
 
-        for(int i = 0; i < text.length; i++) {
-            if(text[i] != this.getByte(pos + i)) {
-                return false;
+        int actualPos = this.toActualIndex(pos);
+        final int bottomSize = this.buffer.length - actualPos;
+        if(bottomSize >= text.length) {
+            for(int i = 0; i < text.length; i++) {
+                if(text[i] != this.buffer[actualPos + i]) {
+                    return false;
+                }
+            }
+        } else {
+            int i = 0;
+            // compare to bottom
+            for(; i < bottomSize; i++) {
+                if(text[i] != this.buffer[actualPos + i]) {
+                    return false;
+                }
+            }
+
+            // compare to top
+            final int topSize = text.length - bottomSize;
+            for(int j = 0; j < topSize; j++) {
+                if(text[i + j] != this.buffer[j]) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
     private byte getByte(long index) {
-        return this.buffer[(int)(index & this.mask)];
+        return this.buffer[this.toActualIndex(index)];
+    }
+
+    private int toActualIndex(long index) {
+        return (int)(index & this.mask);
     }
 
     private boolean reserve(int needSize) {
@@ -120,35 +142,32 @@ public class InputStreamContext extends SourceContext {
             this.expandBuf(readingSize);
 
             // read from input
-            final int actualPos = (int)(this.getPosition() & this.mask);
+            final int actualPos = this.toActualIndex(this.getPosition());
             int readSize;
-            if(actualPos + readingSize <= this.buffer.length) { // direct read
-                try {
-                    readSize = this.input.read(this.buffer, actualPos, readingSize);
-                    if(readSize < 0) {
+            try {
+                if(actualPos + readingSize <= this.buffer.length) { // direct read
+                    if((readSize = this.input.read(this.buffer, actualPos, readingSize)) < 0) {
                         return false;
                     }
-                    this.usedSize += readSize;
-                    this.inputSize += readSize;
-                } catch(IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                try {
-                    final int bottomReadSize = this.buffer.length - actualPos;
-                    readSize = this.input.read(this.buffer, actualPos, bottomReadSize);
-                    if(readSize < 0) {
+                } else {
+                    final int bottomReadingSize = this.buffer.length - actualPos;
+                    if((readSize = this.input.read(this.buffer, actualPos, bottomReadingSize)) < 0) {
                         return false;
                     }
-                    if(readSize == bottomReadSize) {
-                        readSize += this.input.read(this.buffer, 0, actualPos + readingSize - this.buffer.length);
+                    if(readSize == bottomReadingSize) {
+                        int topReadSize = this.input.read(this.buffer, 0, actualPos + readingSize - this.buffer.length);
+                        if(topReadSize < 0) {
+                            return false;
+                        }
+                        readSize += topReadSize;
                     }
-                    this.usedSize += readSize;
-                    this.inputSize += readSize;
-                } catch(IOException e) {
-                    throw new RuntimeException(e);
                 }
+            } catch(IOException e) {
+                throw new RuntimeException(e);
             }
+
+            this.usedSize += readSize;
+            this.inputSize += readSize;
             return readSize >= needSize;
         }
         return true;
@@ -177,7 +196,7 @@ public class InputStreamContext extends SourceContext {
     public void trim() {
         final int remainSize = (int)(this.usedSize - (this.getPosition() - this.startPos));
 
-        this.readOffset = (int)(this.getPosition() & this.mask);
+        this.readOffset = this.toActualIndex(this.getPosition());
         this.startPos = this.getPosition();
         this.usedSize = remainSize;
     }
