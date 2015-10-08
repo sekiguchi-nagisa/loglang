@@ -260,6 +260,28 @@ public class ByteCodeGenerator implements NodeVisitor<Void, MethodBuilder>, Opco
     }
 
     @Override
+    public Void visitDoWhileNode(DoWhileNode node, MethodBuilder param) {
+        // create label
+        Label continueLabel = param.newLabel();
+        Label breakLabel = param.newLabel();
+        Label enterLabel = param.newLabel();
+        param.getLoopLabels().push(Pair.of(breakLabel, continueLabel));
+
+        param.mark(enterLabel);
+        this.visit(node.getBlockNode(), param);
+        param.mark(continueLabel);
+        this.visit(node.getCondNode(), param);
+        param.ifZCmp(GeneratorAdapter.EQ, breakLabel);
+        param.goTo(enterLabel);
+        param.mark(breakLabel);
+
+        // remove label
+        param.getLoopLabels().pop();
+
+        return null;
+    }
+
+    @Override
     public Void visitIfNode(IfNode node, MethodBuilder param) {
         Label elseLabel = param.newLabel();
         Label mergeLabel = param.newLabel();

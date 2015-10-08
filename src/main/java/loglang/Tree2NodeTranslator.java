@@ -107,6 +107,8 @@ public class Tree2NodeTranslator extends TreeTranslator<Node> {{
 
     this.add("While", t -> new WhileNode(range(t), this.translate(t.get(0)), (BlockNode) this.translate(t.get(1))));
 
+    this.add("DoWhile", t -> new DoWhileNode(range(t), (BlockNode) this.translate(t.get(0)), this.translate(t.get(1))));
+
     this.add("If", t ->
             new IfNode(range(t), this.translate(t.get(0)), this.translate(t.get(1)),
                     t.size() == 2 ? null : this.translate(t.get(2)))

@@ -466,6 +466,30 @@ public abstract class Node {
         }
     }
 
+    public static class DoWhileNode extends Node {
+        private BlockNode blockNode;
+        private Node condNode;
+
+        public DoWhileNode(LongRange range, BlockNode blockNode, Node condNode) {
+            super(range);
+            this.blockNode = Objects.requireNonNull(blockNode);
+            this.condNode = Objects.requireNonNull(condNode);
+        }
+
+        public BlockNode getBlockNode() {
+            return blockNode;
+        }
+
+        public Node getCondNode() {
+            return condNode;
+        }
+
+        @Override
+        public <T, P> T accept(NodeVisitor<T, P> visitor, P param) {
+            return visitor.visitDoWhileNode(this, param);
+        }
+    }
+
     public static class IfNode extends Node {
         private Node condNode;
         private Node thenNode;

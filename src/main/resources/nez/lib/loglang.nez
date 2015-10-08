@@ -131,7 +131,7 @@ Statements
 
 Statement
     = VarDecl / PrintStatement / AssertStatement / Block
-    / WhileStatement / IfStatement
+    / WhileStatement / DoWhileStatement / IfStatement
     / Expression
 
 PrintStatement
@@ -145,6 +145,9 @@ Block
 
 WhileStatement
     = { WHILE _ '(' _ @Expression _ ')' _ @Block #While }
+
+DoWhileStatement
+    = { DO _ @Block _ WHILE _ '(' _ @Expression _ ')' #DoWhile }
 
 IfStatement
     = { If _ '(' _ @Expression _ ')' _ @Statement ( _ ELSE _ @Statement)? #If }
